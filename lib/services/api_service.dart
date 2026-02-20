@@ -2,10 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.yourdomain.com/api',
-  );
+  static const String baseUrl = 'http://72.61.171.190:3000/api';
   String? _token;
 
   void setToken(String? token) => _token = token;

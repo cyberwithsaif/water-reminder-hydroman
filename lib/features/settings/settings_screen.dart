@@ -51,7 +51,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           24,
           24,
           24,
-          MediaQuery.of(ctx).viewInsets.bottom + 42,
+          MediaQuery.of(ctx).viewInsets.bottom +
+              MediaQuery.of(ctx).padding.bottom +
+              24,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -141,7 +143,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             24,
             24,
             24,
-            MediaQuery.of(ctx).viewInsets.bottom + 40,
+            MediaQuery.of(ctx).viewInsets.bottom +
+                MediaQuery.of(ctx).padding.bottom +
+                24,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -279,7 +283,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            MediaQuery.of(ctx).padding.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,7 +402,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            MediaQuery.of(ctx).padding.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -878,6 +892,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               const SizedBox(height: 8),
 
+              // System Status section
+              _SectionHeader(title: 'SYSTEM STATUS'),
+              FutureBuilder<String>(
+                future: NotificationService.instance.getDebugInfo(),
+                builder: (context, snapshot) {
+                  final info = snapshot.data ?? 'Checking...';
+                  final hasNotif = info.contains('Permission: true');
+                  final hasAlarm = info.contains('Exact alarm: true');
+
+                  return Column(
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.notifications_active_outlined,
+                        title: 'Notifications',
+                        subtitle: hasNotif
+                            ? 'Permission Granted'
+                            : 'Permission Missing',
+                        trailing: hasNotif
+                            ? null
+                            : TextButton(
+                                onPressed: () async {
+                                  await NotificationService.instance
+                                      .requestPermission();
+                                  setState(() {});
+                                },
+                                child: Text(
+                                  'Request',
+                                  style: GoogleFonts.manrope(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                        onTap: () {},
+                      ),
+                      _SettingsTile(
+                        icon: Icons.alarm_on_outlined,
+                        title: 'Exact Reminders',
+                        subtitle: hasAlarm
+                            ? 'Enabled'
+                            : 'Disabled (May be late)',
+                        trailing: hasAlarm
+                            ? null
+                            : TextButton(
+                                onPressed: () async {
+                                  await PermissionService.requestAll();
+                                  setState(() {});
+                                },
+                                child: Text(
+                                  'Fix Now',
+                                  style: GoogleFonts.manrope(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                        onTap: () {},
+                      ),
+                    ],
+                  );
+                },
+              ),
+
+              const SizedBox(height: 8),
+
               // Support section
               _SectionHeader(title: 'SUPPORT'),
               _SettingsTile(
@@ -939,39 +1018,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               const SizedBox(height: 16),
 
-              // Troubleshooting section
-              _SectionHeader(title: 'TROUBLESHOOTING'),
-              _SettingsTile(
-                icon: Icons.notifications_paused_outlined,
-                title: 'Test Background Notification',
-                subtitle: 'Fires in 5s. Close app to test!',
-                onTap: () async {
-                  final msg = await NotificationService.instance
-                      .testScheduledNotification();
-                  if (mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(msg)));
-                  }
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.battery_saver_outlined,
-                title: 'Battery Optimization',
-                subtitle: 'Ensure notifications work in background',
-                onTap: () async {
-                  await PermissionService.requestAll();
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Requested optimization exemption'),
-                      ),
-                    );
-                  }
-                },
-              ),
-
-              const SizedBox(height: 32), // Reduced from 48
               // Sign out
               if (ref.watch(isLoggedInProvider))
                 Padding(

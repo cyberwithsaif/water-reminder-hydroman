@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -196,20 +195,22 @@ class NotificationService {
     }
 
     try {
-      // Use local DateTime for correct time calculation
-      // This avoids issues with tz.local potentially being wrong
-      final now = DateTime.now();
-      var scheduledLocal = DateTime(now.year, now.month, now.day, hour, minute);
+      // Use TZDateTime directly for the "now" check and scheduling
+      // This is the most robust way to handle daily repeats accurately
+      final now = tz.TZDateTime.now(tz.local);
+      var scheduled = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
 
       // If the time has already passed today, schedule for tomorrow
-      if (scheduledLocal.isBefore(now)) {
-        scheduledLocal = scheduledLocal.add(const Duration(days: 1));
+      if (scheduled.isBefore(now)) {
+        scheduled = scheduled.add(const Duration(days: 1));
       }
-
-      // Convert local DateTime to TZDateTime
-      // tz.TZDateTime.from() correctly converts using millisecondsSinceEpoch
-      // so it works correctly regardless of tz.local setting
-      final scheduled = tz.TZDateTime.from(scheduledLocal, tz.local);
 
       final details = NotificationDetails(
         android: AndroidNotificationDetails(
@@ -221,6 +222,8 @@ class NotificationService {
           icon: '@mipmap/launcher_icon',
           playSound: true,
           enableVibration: true,
+          subText: 'Daily Reminder',
+          showWhen: true,
         ),
       );
 
@@ -255,7 +258,7 @@ class NotificationService {
       debugPrint(
         'NotificationService: Scheduled reminder id=$id at '
         '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} '
-        '(TZ: ${scheduled.timeZoneName}, scheduled: $scheduled)',
+        '(Target Local Time: $scheduled, TZ: ${tz.local.name})',
       );
       return true;
     } catch (e) {
@@ -264,8 +267,64 @@ class NotificationService {
     }
   }
 
-  /// Schedule all enabled reminders from the list
-  Future<int> scheduleAllReminders(List<Reminder> reminders) async {
+  /// Generate a safe 32-bit notification ID from a reminder ID string.
+  /// Android notification IDs must fit in a 32-bit signed int.
+  int _safeNotificationId(String reminderId, int fallbackIndex) {
+    final parsed = int.tryParse(reminderId);
+    if (parsed != null && parsed < 100000) {
+      // Small IDs (default reminders "1"-"5") are safe to use directly
+      return parsed + 1000;
+    }
+    // For large IDs (millisecond timestamps), use hashCode bounded to safe range
+    return (reminderId.hashCode.abs() % 2000000000) + 1000;
+  }
+
+  /// Check if a reminder time falls within the night mute window.
+  bool _isDuringNightMute({
+    required int hour,
+    required int minute,
+    required bool nightMuteEnabled,
+    required String bedtime,
+    required String wakeTime,
+    required List<bool> repeatDays,
+  }) {
+    if (!nightMuteEnabled) return false;
+
+    final bedParts = bedtime.split(':');
+    final wakeParts = wakeTime.split(':');
+    if (bedParts.length != 2 || wakeParts.length != 2) return false;
+
+    final bedHour = int.tryParse(bedParts[0]) ?? 22;
+    final bedMinute = int.tryParse(bedParts[1]) ?? 0;
+    final wakeHour = int.tryParse(wakeParts[0]) ?? 7;
+    final wakeMinute = int.tryParse(wakeParts[1]) ?? 0;
+
+    final reminderMinutes = hour * 60 + minute;
+    final bedMinutes = bedHour * 60 + bedMinute;
+    final wakeMinutes = wakeHour * 60 + wakeMinute;
+
+    // Check if any repeat day is enabled (if none are, mute every day)
+    final anyDayEnabled = repeatDays.any((d) => d);
+    if (!anyDayEnabled) return false;
+
+    if (bedMinutes <= wakeMinutes) {
+      // Same-day mute window (e.g., 01:00 - 06:00)
+      return reminderMinutes >= bedMinutes && reminderMinutes < wakeMinutes;
+    } else {
+      // Overnight mute window (e.g., 22:00 - 07:00)
+      return reminderMinutes >= bedMinutes || reminderMinutes < wakeMinutes;
+    }
+  }
+
+  /// Schedule all enabled reminders from the list.
+  /// Pass night mute settings to skip reminders during sleep hours.
+  Future<int> scheduleAllReminders(
+    List<Reminder> reminders, {
+    bool nightMuteEnabled = false,
+    String nightMuteBedtime = '22:00',
+    String nightMuteWakeTime = '07:00',
+    List<bool> nightMuteRepeatDays = const [true, true, true, true, true, false, false],
+  }) async {
     if (!_initialized) {
       debugPrint('NotificationService: Not initialized, attempting init...');
       await initialize();
@@ -289,6 +348,7 @@ class NotificationService {
     }
 
     int scheduled = 0;
+    int skippedNightMute = 0;
     for (int i = 0; i < reminders.length; i++) {
       final r = reminders[i];
       if (!r.isEnabled) continue;
@@ -300,8 +360,24 @@ class NotificationService {
       final minute = int.tryParse(parts[1]);
       if (hour == null || minute == null) continue;
 
+      // Skip reminders during night mute window
+      if (_isDuringNightMute(
+        hour: hour,
+        minute: minute,
+        nightMuteEnabled: nightMuteEnabled,
+        bedtime: nightMuteBedtime,
+        wakeTime: nightMuteWakeTime,
+        repeatDays: nightMuteRepeatDays,
+      )) {
+        skippedNightMute++;
+        debugPrint(
+          'NotificationService: Skipping reminder ${r.time} (night mute)',
+        );
+        continue;
+      }
+
       final success = await scheduleDailyReminder(
-        id: int.tryParse(r.id) ?? r.id.hashCode,
+        id: _safeNotificationId(r.id, i),
         title: 'Time to Hydrate!',
         body: r.label.isNotEmpty
             ? r.label
@@ -310,11 +386,18 @@ class NotificationService {
         minute: minute,
       );
 
-      if (success) scheduled++;
+      if (success) {
+        scheduled++;
+      } else {
+        debugPrint(
+          'NotificationService: FAILED to schedule reminder $i (${r.time})',
+        );
+      }
     }
 
     debugPrint(
-      'NotificationService: Scheduled $scheduled/${reminders.where((r) => r.isEnabled).length} reminders',
+      'NotificationService: Scheduled $scheduled/${reminders.where((r) => r.isEnabled).length} reminders'
+      '${skippedNightMute > 0 ? ' ($skippedNightMute skipped by night mute)' : ''}',
     );
     return scheduled;
   }

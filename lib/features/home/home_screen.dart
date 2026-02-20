@@ -150,58 +150,75 @@ class HomeScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickAddButton(
-                            icon: Icons.local_cafe,
-                            amount: 250,
-                            isPrimary: true,
-                            onTap: () {
-                              ref
-                                  .read(todayLogsProvider.notifier)
-                                  .addWater(250, cupType: 'glass');
-                            },
+                    Builder(builder: (context) {
+                      final defaultCup = profile?.defaultCupMl ?? 250;
+                      final defaultIcon = defaultCup <= 100
+                          ? Icons.coffee
+                          : defaultCup <= 250
+                              ? Icons.local_cafe
+                              : defaultCup <= 500
+                                  ? Icons.water
+                                  : Icons.sports_gymnastics;
+                      final defaultLabel = defaultCup <= 100
+                          ? 'espresso'
+                          : defaultCup <= 250
+                              ? 'glass'
+                              : defaultCup <= 500
+                                  ? 'bottle'
+                                  : 'sports';
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: _QuickAddButton(
+                              icon: defaultIcon,
+                              amount: defaultCup,
+                              isPrimary: true,
+                              onTap: () {
+                                ref
+                                    .read(todayLogsProvider.notifier)
+                                    .addWater(defaultCup, cupType: defaultLabel);
+                              },
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _QuickAddButton(
-                            icon: Icons.water,
-                            amount: 500,
-                            isPrimary: false,
-                            onTap: () {
-                              ref
-                                  .read(todayLogsProvider.notifier)
-                                  .addWater(500, cupType: 'bottle');
-                            },
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _QuickAddButton(
+                              icon: Icons.water,
+                              amount: 500,
+                              isPrimary: false,
+                              onTap: () {
+                                ref
+                                    .read(todayLogsProvider.notifier)
+                                    .addWater(500, cupType: 'bottle');
+                              },
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/cup-selection'),
-                          child: Container(
-                            width: 92,
-                            height: 92,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.grey.shade300,
-                                width: 2,
-                                strokeAlign: BorderSide.strokeAlignInside,
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/cup-selection'),
+                            child: Container(
+                              width: 92,
+                              height: 92,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.grey.shade300,
+                                  width: 2,
+                                  strokeAlign: BorderSide.strokeAlignInside,
+                                ),
+                                color: Colors.grey.shade50,
                               ),
-                              color: Colors.grey.shade50,
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              size: 28,
-                              color: AppColors.textTertiary,
+                              child: const Icon(
+                                Icons.add,
+                                size: 28,
+                                color: AppColors.textTertiary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      );
+                    }),
                   ],
                 ),
               ),

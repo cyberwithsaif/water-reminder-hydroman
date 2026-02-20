@@ -283,7 +283,9 @@ class ReminderScheduleScreen extends ConsumerWidget {
           24,
           24,
           24,
-          MediaQuery.of(ctx).viewInsets.bottom + 24,
+          MediaQuery.of(ctx).viewInsets.bottom +
+              MediaQuery.of(ctx).padding.bottom +
+              24,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/reminder_provider.dart';
+import '../../providers/user_provider.dart';
 
 class NightMuteScreen extends ConsumerWidget {
   const NightMuteScreen({super.key});
@@ -94,8 +95,12 @@ class NightMuteScreen extends ConsumerWidget {
                   ),
                   Switch(
                     value: isEnabled,
-                    onChanged: (val) =>
-                        ref.read(nightMuteEnabledProvider.notifier).state = val,
+                    onChanged: (val) async {
+                      await ref
+                          .read(userProfileProvider.notifier)
+                          .updateNightMute(isEnabled: val);
+                      ref.read(remindersProvider.notifier).scheduleNotifications();
+                    },
                     activeTrackColor: AppColors.primary,
                   ),
                 ],
@@ -157,11 +162,13 @@ class NightMuteScreen extends ConsumerWidget {
               children: List.generate(7, (index) {
                 final isActive = repeatDays[index];
                 return GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     final newDays = List<bool>.from(repeatDays);
                     newDays[index] = !newDays[index];
-                    ref.read(nightMuteRepeatDaysProvider.notifier).state =
-                        newDays;
+                    await ref
+                        .read(userProfileProvider.notifier)
+                        .updateNightMute(repeatDays: newDays);
+                    ref.read(remindersProvider.notifier).scheduleNotifications();
                   },
                   child: Container(
                     width: 42,
@@ -217,10 +224,15 @@ class NightMuteScreen extends ConsumerWidget {
       final timeStr =
           '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
       if (isBedtime) {
-        ref.read(nightMuteBedtimeProvider.notifier).state = timeStr;
+        await ref
+            .read(userProfileProvider.notifier)
+            .updateNightMute(bedtime: timeStr);
       } else {
-        ref.read(nightMuteWakeTimeProvider.notifier).state = timeStr;
+        await ref
+            .read(userProfileProvider.notifier)
+            .updateNightMute(wakeTime: timeStr);
       }
+      ref.read(remindersProvider.notifier).scheduleNotifications();
     }
   }
 }

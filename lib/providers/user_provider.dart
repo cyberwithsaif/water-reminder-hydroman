@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user_profile.dart';
 import '../data/repositories/user_repository.dart';
@@ -29,7 +30,17 @@ class UserProfileNotifier extends StateNotifier<UserProfile?> {
     // Set null first to force Riverpod state change notification,
     // since Hive returns the same object reference
     state = null;
-    state = _repo.getProfile();
+    final profile = _repo.getProfile();
+
+    // AUTO-FIX: If profile exists and has a name but isn't marked as onboarded,
+    // it's an old user. Mark them onboarded so they don't see onboarding again.
+    if (profile != null && !profile.isOnboarded && profile.name.isNotEmpty) {
+      debugPrint('UserProfileNotifier: Migrating legacy profile to onboarded');
+      profile.isOnboarded = true;
+      profile.save();
+    }
+
+    state = profile;
   }
 
   Future<void> saveProfile(UserProfile profile) async {
@@ -68,6 +79,23 @@ class UserProfileNotifier extends StateNotifier<UserProfile?> {
   Future<void> toggleNotifications(bool enabled) async {
     if (state != null) {
       state!.notificationsEnabled = enabled;
+      await state!.save();
+      state = null;
+      state = _repo.getProfile();
+    }
+  }
+
+  Future<void> updateNightMute({
+    bool? isEnabled,
+    String? bedtime,
+    String? wakeTime,
+    List<bool>? repeatDays,
+  }) async {
+    if (state != null) {
+      if (isEnabled != null) state!.nightMuteEnabled = isEnabled;
+      if (bedtime != null) state!.nightMuteBedtime = bedtime;
+      if (wakeTime != null) state!.nightMuteWakeTime = wakeTime;
+      if (repeatDays != null) state!.nightMuteRepeatDays = repeatDays;
       await state!.save();
       state = null;
       state = _repo.getProfile();

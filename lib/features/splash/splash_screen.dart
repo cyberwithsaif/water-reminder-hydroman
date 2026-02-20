@@ -130,8 +130,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _runDeferredInit();
   }
 
-  /// Non-critical initialization that runs in background after navigation
+  /// Non-critical initialization that runs in background after navigation.
+  /// Captures provider references before the microtask to avoid using
+  /// ref after the widget is disposed (race condition with navigation).
   void _runDeferredInit() {
+    // Capture the notifier reference NOW, before widget disposal
+    final remindersNotifier = ref.read(remindersProvider.notifier);
+
     Future.microtask(() async {
       try {
         // Initialize notifications & ads in parallel
@@ -140,11 +145,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           AdHelper.initialize(),
         ]);
 
-        // Request permissions (won't block UI)
-        await PermissionService.requestAll();
-
         // NOW schedule notifications (service is initialized)
-        await ref.read(remindersProvider.notifier).scheduleNotifications();
+        // Uses captured notifier reference (safe after widget disposal)
+        await remindersNotifier.scheduleNotifications();
 
         debugPrint('SplashScreen: Deferred init complete');
       } catch (e) {

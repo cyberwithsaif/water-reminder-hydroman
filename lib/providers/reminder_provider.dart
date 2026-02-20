@@ -18,13 +18,25 @@ final remindersProvider =
       return RemindersNotifier(repo, ref);
     });
 
-// Night mute settings
-final nightMuteEnabledProvider = StateProvider<bool>((ref) => true);
-final nightMuteBedtimeProvider = StateProvider<String>((ref) => '22:00');
-final nightMuteWakeTimeProvider = StateProvider<String>((ref) => '07:00');
-final nightMuteRepeatDaysProvider = StateProvider<List<bool>>(
-  (ref) => [true, true, true, true, true, false, false],
-);
+// Night mute settings (Now persistent via UserProfile)
+// These are kept as lightweight proxies to the UserProfile for easier transition
+// but they really should be accessed via userProfileProvider directly.
+final nightMuteEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(userProfileProvider)?.nightMuteEnabled ?? true;
+});
+
+final nightMuteBedtimeProvider = Provider<String>((ref) {
+  return ref.watch(userProfileProvider)?.nightMuteBedtime ?? '22:00';
+});
+
+final nightMuteWakeTimeProvider = Provider<String>((ref) {
+  return ref.watch(userProfileProvider)?.nightMuteWakeTime ?? '07:00';
+});
+
+final nightMuteRepeatDaysProvider = Provider<List<bool>>((ref) {
+  return ref.watch(userProfileProvider)?.nightMuteRepeatDays ??
+      const [true, true, true, true, true, false, false];
+});
 
 // Next scheduled reminder (only considers enabled reminders)
 final nextReminderProvider = Provider<Reminder?>((ref) {
@@ -72,7 +84,7 @@ class RemindersNotifier extends StateNotifier<List<Reminder>> {
   /// Schedule notifications for loaded reminders (requires NotificationService)
   Future<void> scheduleNotifications() async {
     if (state.isEmpty) {
-      loadDataOnly(); // Ensure data is loaded
+      await loadDataOnly(); // Ensure data is loaded before scheduling
     }
     await _reschedule();
   }
@@ -87,16 +99,28 @@ class RemindersNotifier extends StateNotifier<List<Reminder>> {
     await _repo.addReminder(reminder);
     state = [..._repo.getAll()];
     await _reschedule();
-    // Proactive sync push
-    _ref.read(syncServiceProvider).syncAll();
+    // Proactive sync push with state refresh callback
+    _ref
+        .read(syncServiceProvider)
+        .syncAll(
+          onComplete: () {
+            state = [..._repo.getAll()];
+          },
+        );
   }
 
   Future<void> deleteReminder(String id) async {
     await _repo.deleteReminder(id);
     state = [..._repo.getAll()];
     await _reschedule();
-    // Proactive sync push
-    _ref.read(syncServiceProvider).syncAll();
+    // Proactive sync push with state refresh callback
+    _ref
+        .read(syncServiceProvider)
+        .syncAll(
+          onComplete: () {
+            state = [..._repo.getAll()];
+          },
+        );
   }
 
   Future<void> toggleReminder(String id) async {
@@ -134,8 +158,20 @@ class RemindersNotifier extends StateNotifier<List<Reminder>> {
         return;
       }
 
+      // Read night mute settings from user profile
+      final nightMuteEnabled = profile?.nightMuteEnabled ?? false;
+      final nightMuteBedtime = profile?.nightMuteBedtime ?? '22:00';
+      final nightMuteWakeTime = profile?.nightMuteWakeTime ?? '07:00';
+      final nightMuteRepeatDays =
+          profile?.nightMuteRepeatDays ??
+          const [true, true, true, true, true, false, false];
+
       final count = await NotificationService.instance.scheduleAllReminders(
         state,
+        nightMuteEnabled: nightMuteEnabled,
+        nightMuteBedtime: nightMuteBedtime,
+        nightMuteWakeTime: nightMuteWakeTime,
+        nightMuteRepeatDays: nightMuteRepeatDays,
       );
 
       // Verify scheduled count

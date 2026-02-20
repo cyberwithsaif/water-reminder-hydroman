@@ -41,18 +41,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  void _nextStep() {
+  bool _isSaving = false;
+
+  Future<void> _nextStep() async {
+    debugPrint('Onboarding: _nextStep called. Current step: $_currentStep');
     // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
     if (_currentStep < 3) {
+      debugPrint('Onboarding: Moving to step ${_currentStep + 1}');
       setState(() => _currentStep++);
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     } else {
-      _completeOnboarding();
+      debugPrint('Onboarding: Final step reached. Completing onboarding...');
+      await _completeOnboarding();
     }
   }
 
@@ -67,24 +72,46 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _completeOnboarding() async {
-    final weight = double.tryParse(_weightController.text) ?? 70.0;
-    final weightKg = _weightUnit == 'lbs' ? weight / 2.20462 : weight;
+    if (_isSaving) {
+      debugPrint('Onboarding: _completeOnboarding aborted (already saving)');
+      return;
+    }
+    setState(() => _isSaving = true);
+    debugPrint('Onboarding: Saving profile...');
 
-    final profile = UserProfile(
-      gender: _gender,
-      weightKg: weightKg,
-      dailyGoalMl: _dailyGoal,
-      wakeTime: _wakeTime,
-      sleepTime: _sleepTime,
-      isOnboarded: true,
-      name: _nameController.text.trim(),
-      weightUnit: _weightUnit,
-    );
+    try {
+      final weight = double.tryParse(_weightController.text) ?? 70.0;
+      final weightKg = _weightUnit == 'lbs' ? weight / 2.20462 : weight;
 
-    await ref.read(userProfileProvider.notifier).saveProfile(profile);
+      final profile = UserProfile(
+        gender: _gender,
+        weightKg: weightKg,
+        dailyGoalMl: _dailyGoal,
+        wakeTime: _wakeTime,
+        sleepTime: _sleepTime,
+        isOnboarded: true,
+        name: _nameController.text.trim(),
+        weightUnit: _weightUnit,
+        defaultCupMl: _selectedCupMl,
+      );
 
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/main');
+      debugPrint('Onboarding: Profile created. Calling saveProfile...');
+      await ref.read(userProfileProvider.notifier).saveProfile(profile);
+      debugPrint('Onboarding: saveProfile completed.');
+
+      if (mounted) {
+        debugPrint('Onboarding: Navigating to /main...');
+        Navigator.pushReplacementNamed(context, '/main');
+      }
+    } catch (e, stack) {
+      debugPrint('Onboarding: Save failed: $e');
+      debugPrint('Onboarding: Stack trace: $stack');
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString().split('\n')[0]}')),
+        );
+      }
     }
   }
 
@@ -211,33 +238,48 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _nextStep,
+                  onPressed: _isSaving ? null : _nextStep,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.primary.withValues(
+                      alpha: 0.6,
+                    ),
+                    disabledForegroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 4,
                     shadowColor: AppColors.primary.withValues(alpha: 0.3),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _currentStep == 3 ? 'Get Started' : 'Next Step',
-                        style: GoogleFonts.manrope(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _currentStep == 3 ? 'Get Started' : 'Next Step',
+                              style: GoogleFonts.manrope(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              _currentStep == 3
+                                  ? Icons.check
+                                  : Icons.arrow_forward,
+                              size: 20,
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        _currentStep == 3 ? Icons.check : Icons.arrow_forward,
-                        size: 20,
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),

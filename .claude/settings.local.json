@@ -6,7 +6,14 @@
       "Bash(flutter pub add:*)",
       "Bash(flutter pub deps:*)",
       "Bash(where.exe:*)",
-      "Read(//c/Users/saif7/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_timezone-5.0.1/lib/**)"
+      "Read(//c/Users/saif7/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_timezone-5.0.1/lib/**)",
+      "Bash(dart run:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(adb shell am start:*)",
+      "Bash(adb shell pm list packages:*)"
+    ],
+    "additionalDirectories": [
+      "d:\\DEVELOPMENTS\\hydroman\\logo"
     ]
   }
 }

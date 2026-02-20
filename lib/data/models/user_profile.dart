@@ -29,7 +29,22 @@ class UserProfile extends HiveObject {
   String weightUnit; // 'kg' or 'lbs'
 
   @HiveField(8)
-  bool notificationsEnabled; // Notification toggle state
+  bool notificationsEnabled;
+
+  @HiveField(9)
+  bool nightMuteEnabled;
+
+  @HiveField(10)
+  String nightMuteBedtime;
+
+  @HiveField(11)
+  String nightMuteWakeTime;
+
+  @HiveField(12)
+  List<bool> nightMuteRepeatDays;
+
+  @HiveField(13)
+  int defaultCupMl;
 
   UserProfile({
     this.gender = 'male',
@@ -41,6 +56,19 @@ class UserProfile extends HiveObject {
     this.name = '',
     this.weightUnit = 'kg',
     this.notificationsEnabled = true,
+    this.nightMuteEnabled = true,
+    this.nightMuteBedtime = '22:00',
+    this.nightMuteWakeTime = '07:00',
+    this.nightMuteRepeatDays = const [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+    ],
+    this.defaultCupMl = 250,
   });
 
   double get weightDisplay =>

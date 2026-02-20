@@ -1,5 +1,6 @@
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
+import 'notification_service.dart';
 
 class PermissionService {
   PermissionService._();
@@ -7,21 +8,14 @@ class PermissionService {
   static Future<void> requestAll() async {
     debugPrint('PermissionService: Requesting all permissions');
 
-    // 1. Notification Permission (Android 13+)
-    if (await Permission.notification.isDenied) {
-      await Permission.notification.request();
-    }
+    // 1. Notification & Exact Alarm Permissions
+    // We use NotificationService's implementation as it's tailored for these
+    await NotificationService.instance.requestPermission();
 
-    // 2. Exact Alarm Permission (Android 12+)
-    // This is required for scheduled notifications to be precise
-    if (await Permission.scheduleExactAlarm.isDenied) {
-      await Permission.scheduleExactAlarm.request();
-    }
-
-    // 3. Background / Battery Optimization Permission
+    // 2. Background / Battery Optimization Permission
     // Helps prevent the OS from killing the app's background tasks
     if (await Permission.ignoreBatteryOptimizations.isDenied) {
-      // Note: This usually opens a system dialog or settings
+      debugPrint('PermissionService: Requesting ignoreBatteryOptimizations');
       await Permission.ignoreBatteryOptimizations.request();
     }
 

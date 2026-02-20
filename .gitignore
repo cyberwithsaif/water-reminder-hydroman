@@ -44,11 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Secrets & Local Config
+# Secrets
 .env
-*.jks
-*.keystore
-*.jks
-key.properties
-local.properties
-pubspec.lock
+server/.env

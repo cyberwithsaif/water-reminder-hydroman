@@ -26,13 +26,18 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
       name: fields[6] as String,
       weightUnit: fields[7] as String,
       notificationsEnabled: fields[8] as bool,
+      nightMuteEnabled: fields[9] as bool,
+      nightMuteBedtime: fields[10] as String,
+      nightMuteWakeTime: fields[11] as String,
+      nightMuteRepeatDays: (fields[12] as List).cast<bool>(),
+      defaultCupMl: fields[13] as int? ?? 250,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProfile obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.gender)
       ..writeByte(1)
@@ -50,7 +55,17 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
       ..writeByte(7)
       ..write(obj.weightUnit)
       ..writeByte(8)
-      ..write(obj.notificationsEnabled);
+      ..write(obj.notificationsEnabled)
+      ..writeByte(9)
+      ..write(obj.nightMuteEnabled)
+      ..writeByte(10)
+      ..write(obj.nightMuteBedtime)
+      ..writeByte(11)
+      ..write(obj.nightMuteWakeTime)
+      ..writeByte(12)
+      ..write(obj.nightMuteRepeatDays)
+      ..writeByte(13)
+      ..write(obj.defaultCupMl);
   }
 
   @override

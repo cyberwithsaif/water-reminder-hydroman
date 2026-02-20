@@ -62,6 +62,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .verifyOtp(phone, code);
 
     if (success && mounted) {
+      // Wait for sync to complete so returning users get their profile
+      // pulled from server before checking onboarding status
+      try {
+        await ref
+            .read(syncServiceProvider)
+            .syncAll()
+            .timeout(const Duration(seconds: 5));
+      } catch (_) {
+        // Sync timeout is OK — proceed with whatever data we have
+      }
+
+      if (!mounted) return;
+
+      // Reload profile from Hive (sync may have written it)
+      ref.read(userProfileProvider.notifier).load();
+
       final isOnboarded = ref.read(isOnboardedProvider);
       Navigator.pushReplacementNamed(
         context,

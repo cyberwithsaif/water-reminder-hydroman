@@ -6,6 +6,7 @@ import '../../features/analytics/analytics_screen.dart';
 import '../../features/reminders/reminder_schedule_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/permission_service.dart';
 import 'banner_ad_widget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,8 +23,9 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   @override
   void initState() {
     super.initState();
-    // Trigger auto-sync on app startup
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Trigger auto-sync and permission request on app startup
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await PermissionService.requestAll();
       ref.read(syncServiceProvider).syncAll();
     });
   }
