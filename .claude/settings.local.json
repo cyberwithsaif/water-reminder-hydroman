@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter build:*)",
+      "Bash(adb install:*)",
+      "Bash(flutter pub add:*)",
+      "Bash(flutter pub deps:*)",
+      "Bash(where.exe:*)",
+      "Read(//c/Users/saif7/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_timezone-5.0.1/lib/**)"
+    ]
+  }
+}

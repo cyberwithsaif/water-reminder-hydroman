@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hydroman Hydration Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#279df1",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101b22",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.circular-chart {
+            display: block;
+            margin: 0 auto;
+            max-width: 80%;
+            max-height: 250px;
+        }
+        .circle-bg {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 2.5;
+        }
+        .dark .circle-bg {
+            stroke: #1e293b;
+        }
+        .circle {
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            animation: progress 1s ease-out forwards;
+        }
+        @keyframes progress {
+            0% { stroke-dasharray: 0 100; }
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex justify-center">
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-xl overflow-x-hidden">
+<div class="flex items-center justify-between p-6 pb-2">
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Sunday, 12 Oct</p>
+<h2 class="text-2xl font-bold leading-tight tracking-tight">Good Morning, Alex</h2>
+</div>
+<button class="flex items-center justify-center h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white transition hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="flex flex-col items-center justify-center py-6 px-4">
+<div class="relative w-64 h-64 flex items-center justify-center">
+<svg class="circular-chart text-primary" viewBox="0 0 36 36">
+<path class="circle-bg" d="M18 2.0845
+                           a 15.9155 15.9155 0 0 1 0 31.831
+                           a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+<path class="circle stroke-current" d="M18 2.0845
+                           a 15.9155 15.9155 0 0 1 0 31.831
+                           a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="50, 100"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-4xl text-primary mb-1 fill-1">water_drop</span>
+<h1 class="text-4xl font-extrabold text-slate-900 dark:text-white">1250<span class="text-lg font-medium text-slate-400 ml-1">ml</span></h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Goal: 2500ml</p>
+</div>
+</div>
+</div>
+<div class="flex justify-between px-8 pb-6">
+<div class="flex flex-col items-center">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Streak</span>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-500 text-lg">local_fire_department</span>
+<span class="font-bold text-lg">12 Days</span>
+</div>
+</div>
+<div class="w-px bg-slate-200 dark:bg-slate-700 h-10"></div>
+<div class="flex flex-col items-center">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Average</span>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-primary text-lg">show_chart</span>
+<span class="font-bold text-lg">2100 ml</span>
+</div>
+</div>
+</div>
+<div class="px-6 py-2">
+<p class="text-slate-900 dark:text-white text-lg font-bold mb-4">Quick Add</p>
+<div class="flex gap-3">
+<button class="flex-1 flex flex-col items-center justify-center gap-2 h-24 rounded-xl bg-primary text-white shadow-lg shadow-primary/30 transition hover:bg-primary/90 hover:scale-[1.02]">
+<span class="material-symbols-outlined text-2xl">local_cafe</span>
+<span class="text-base font-bold">+250ml</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-2 h-24 rounded-xl bg-slate-100 dark:bg-slate-800 text-primary dark:text-primary transition hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-2xl">water_full</span>
+<span class="text-base font-bold">+500ml</span>
+</button>
+<button class="flex items-center justify-center w-24 h-24 rounded-xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 hover:text-primary hover:border-primary transition">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Next Reminder</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Scheduled for 2:00 PM</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 p-5 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex gap-4 relative z-10">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">lightbulb</span>
+<p class="text-xs font-bold text-primary uppercase tracking-wider">Hydroman Tip</p>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Great job! You're halfway there. Drinking water before meals can help you feel fuller.
+                        </p>
+</div>
+<div class="w-16 h-16 flex-shrink-0">
+<div class="w-full h-full rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center overflow-hidden">
+<img alt="A cute blue water droplet mascot smiling" class="w-full h-full object-cover opacity-90" data-alt="Friendly water droplet mascot illustration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqeZbMYkFYUO_B2epATLl7KI66mnCSyIVwMBjabZg3olv1JkUbqd19b1TEDanwVZXpmwidqnXDBoJ0lVUdY7WnwqOVJZ6knb8VnFbCPX9-Wg_62gQR1w5tmGoGkExP_Q61tCaApzpjdSGrmVTNDo8MbrjAYMEw7go1UlLLL3io92b_gx5xHWtrSCwVIWzUQHaNSLFQEbDMomW8qrIriAhkJl0ajC8qaRngDOY4uxScrBra_5Dr7n9fE6MfA368Z9n0ti0U7Q441WA"/>
+</div>
+</div>
+</div>
+<div class="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl"></div>
+</div>
+</div>
+<div class="flex-1"></div>
+<div class="sticky bottom-0 z-50 flex gap-2 border-t border-slate-100 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 pb-6 pt-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-primary" href="#">
+<span class="material-symbols-outlined text-[28px] font-variation-settings-FILL-1">water_drop</span>
+<p class="text-xs font-bold">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition" href="#">
+<span class="material-symbols-outlined text-[28px]">history</span>
+<p class="text-xs font-medium">History</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition" href="#">
+<span class="material-symbols-outlined text-[28px]">local_mall</span>
+<p class="text-xs font-medium">Shop</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition" href="#">
+<span class="material-symbols-outlined text-[28px]">person</span>
+<p class="text-xs font-medium">Profile</p>
+</a>
+</div>
+</div>
+
+</body></html>

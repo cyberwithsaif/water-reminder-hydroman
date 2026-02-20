@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Drinking History Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#279df1",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101b22",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-slate-900 shadow-2xl">
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center justify-between bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-slate-900 dark:text-white">Analytics</h1>
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">more_horiz</span>
+</button>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-24">
+<!-- Date Selector -->
+<div class="flex justify-center">
+<button class="flex items-center gap-2 rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span>This Week</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+<!-- Main Chart Card -->
+<div class="flex flex-col gap-4 rounded-2xl bg-gradient-to-br from-blue-50 to-white dark:from-slate-800 dark:to-slate-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Weekly Hydration</p>
+<div class="flex items-baseline gap-2">
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white">14,250<span class="text-lg font-medium text-slate-500 ml-1">ml</span></h2>
+</div>
+</div>
+<div class="rounded-lg bg-green-100 dark:bg-green-900/30 px-2 py-1 text-xs font-bold text-green-700 dark:text-green-400">
+                        +12% vs last week
+                    </div>
+</div>
+<!-- Chart -->
+<div class="relative mt-4 h-48 w-full">
+<!-- Goal Line -->
+<div class="absolute left-0 top-1/4 w-full border-t border-dashed border-primary/30 z-0"></div>
+<div class="absolute right-0 top-[22%] -mt-3 text-[10px] font-bold text-primary bg-white dark:bg-slate-800 px-1">Goal 2000ml</div>
+<div class="grid h-full w-full grid-cols-7 items-end gap-2 sm:gap-4">
+<!-- Monday -->
+<div class="group flex flex-col items-center gap-2 h-full justify-end cursor-pointer">
+<div class="relative w-full rounded-t-lg bg-primary/20 dark:bg-primary/10 transition-all group-hover:bg-primary/30" style="height: 40%;">
+<div class="absolute bottom-0 w-full rounded-t-lg bg-primary transition-all group-hover:bg-blue-400" style="height: 100%;"></div>
+</div>
+<span class="text-xs font-medium text-slate-400 group-hover:text-primary">M</span>
+</div>
+<!-- Tuesday -->
+<div class="group flex flex-col items-center gap-2 h-full justify-end cursor-pointer">
+<div class="relative w-full rounded-t-lg bg-primary/20 dark:bg-primary/10 transition-all group-hover:bg-primary/30" style="height: 65%;">
+<div class="absolute bottom-0 w-full rounded-t-lg bg-primary transition-all group-hover:bg-blue-400" style="height: 100%;"></div>
+</div>
+<span class="text-xs font-medium text-slate-400 group-hover:text-primary">T</span>
+</div>
+<!-- Wednesday -->
+<div class="group flex flex-col items-center gap-2 h-full justify-end cursor-pointer">
+<div class="relative w-full rounded-t-lg bg-primary/20 dark:bg-primary/10 transition-all group-hover:bg-primary/30" style="height: 85%;">
+<div class="absolute bottom-0 w-full rounded-t-lg bg-primary transition-all group-hover:bg-blue-400" style="height: 100%;"></div>
+</div>
+<span class="text-xs font-medium text-slate-900 dark:text-white font-bold">W</span>
+</div>
+<!-- Thursday -->
+<div class="group flex flex-col items-center gap-2 h-full justify-end cursor-pointer">
+<div class="relative w-full rounded-t-lg bg-primary/20 dark:bg-primary/10 transition-all group-hover:bg-primary/30" style="height: 50%;">
+<div class="absolute bottom-0 w-full rounded-t-lg bg-primary transition-all group-hover:bg-blue-400" style="height: 100%;"></div>
+</div>
+<span class="text-xs font-medium text-slate-400 group-hover:text-primary">T</span>
+</div>
+<!-- Friday -->
+<div class="group flex flex-col items-center gap-2 h-full justify-end cursor-pointer">
+<div class="relative w-full rounded-t-lg bg-primary/20 dark:bg-primary/10 transition-all group-hover:bg-primary/30" style="height: 90%;">
+<div class="absolute bottom-0 w-full rounded-t-lg bg-primary transition-all group-hover:bg-blue-400" style="height: 100%;"></div>
+</div>
+<span class="text-xs font-medium text-slate-400 group-hover:text-primary">F</span>
+</div>
+<!-- Saturday -->
+<div class="group flex flex-col items-center gap-2 h-full justify-end cursor-pointer">
+<div class="relative w-full rounded-t-lg bg-primary/20 dark:bg-primary/10 transition-all group-hover:bg-primary/30" style="height: 30%;">
+<div class="absolute bottom-0 w-full rounded-t-lg bg-primary transition-all group-hover:bg-blue-400" style="height: 100%;"></div>
+</div>
+<span class="text-xs font-medium text-slate-400 group-hover:text-primary">S</span>
+</div>
+<!-- Sunday -->
+<div class="group flex flex-col items-center gap-2 h-full justify-end cursor-pointer">
+<div class="relative w-full rounded-t-lg bg-primary/20 dark:bg-primary/10 transition-all group-hover:bg-primary/30" style="height: 45%;">
+<div class="absolute bottom-0 w-full rounded-t-lg bg-primary transition-all group-hover:bg-blue-400" style="height: 100%;"></div>
+</div>
+<span class="text-xs font-medium text-slate-400 group-hover:text-primary">S</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col gap-1 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-primary mb-1">
+<span class="material-symbols-outlined text-[18px]">water_drop</span>
+</div>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400">Daily Avg</p>
+<p class="text-base font-bold text-slate-900 dark:text-white">2,035ml</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-primary mb-1">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+</div>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400">Completion</p>
+<p class="text-base font-bold text-slate-900 dark:text-white">92%</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-primary mb-1">
+<span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+</div>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400">Streak</p>
+<p class="text-base font-bold text-slate-900 dark:text-white">5 Days</p>
+</div>
+</div>
+<!-- History Section -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Recent History</h3>
+<button class="text-sm font-semibold text-primary">View All</button>
+</div>
+<!-- List Items -->
+<div class="flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-primary">
+<span class="material-symbols-outlined">local_drink</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-base font-bold text-slate-900 dark:text-white">Glass of Water</p>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">10:45 AM • Hydration Boost</p>
+</div>
+<div class="text-right">
+<p class="text-base font-bold text-primary">250 ml</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-primary">
+<span class="material-symbols-outlined">water_bottle</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-base font-bold text-slate-900 dark:text-white">Water Bottle</p>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">08:30 AM • Morning Start</p>
+</div>
+<div class="text-right">
+<p class="text-base font-bold text-primary">500 ml</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center gap-4 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700 opacity-60">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">local_cafe</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-base font-bold text-slate-900 dark:text-white">Tea</p>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Yesterday</p>
+</div>
+<div class="text-right">
+<p class="text-base font-bold text-slate-500 dark:text-slate-400">300 ml</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Add Button (FAB area but inline for this design request) -->
+<button class="mt-2 w-full rounded-xl bg-primary py-4 text-base font-bold text-white shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                Log Drink
+            </button>
+</main>
+<!-- Bottom Navigation -->
+<nav class="sticky bottom-0 z-20 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 pb-6 pt-3">
+<div class="flex items-center justify-between">
+<a class="group flex flex-col items-center gap-1 text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="group flex flex-col items-center gap-1 text-primary" href="#">
+<div class="rounded-full bg-blue-50 dark:bg-blue-900/20 px-4 py-1">
+<span class="material-symbols-outlined text-[24px] font-bold">bar_chart</span>
+</div>
+<span class="text-[10px] font-medium">Analytics</span>
+</a>
+<a class="group flex flex-col items-center gap-1 text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">history</span>
+<span class="text-[10px] font-medium">History</span>
+</a>
+<a class="group flex flex-col items-center gap-1 text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

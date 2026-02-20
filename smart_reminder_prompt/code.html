@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart Reminder Prompt</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#279df1",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101b22",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 flex flex-col h-screen overflow-hidden">
+<!-- Top Navigation / Close -->
+<header class="flex items-center justify-between p-4 pt-12 pb-2">
+<div class="w-12"></div> <!-- Spacer for centering -->
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] opacity-0">Reminder</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-full w-10 h-10 bg-slate-200/50 dark:bg-slate-700/50 text-slate-900 dark:text-slate-100 transition-colors hover:bg-slate-300/50 dark:hover:bg-slate-600/50">
+<span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-center px-6 relative w-full max-w-md mx-auto">
+<!-- Speech Bubble -->
+<div class="relative bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 w-full max-w-[280px] text-center transform translate-y-2 animate-bounce-slow">
+<h1 class="text-2xl font-extrabold text-primary dark:text-primary mb-1">Time for a sip!</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Staying hydrated keeps your energy up!</p>
+<!-- Triangle pointer for bubble -->
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-800 border-b border-r border-slate-100 dark:border-slate-700 transform rotate-45"></div>
+</div>
+<!-- Mascot Illustration Container -->
+<div class="relative w-64 h-64 mb-8 flex items-center justify-center">
+<!-- Background Blob -->
+<div class="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-full blur-2xl transform scale-90"></div>
+<!-- Mascot Image -->
+<div class="relative w-full h-full bg-contain bg-center bg-no-repeat z-10 drop-shadow-lg" data-alt="Cute 3D illustration of a water drop character smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDnahrGoXJFroM3xEY1wGkbDhswvyWiEDxJFVpq9qbPKN-S-_rlyvjig_Rn7qVOPqq4rgvZjCziUB7TtgQ_3OM4g_zE5c0MlY5wl_Rjnw6SCtzQtgkE-5KqDOSuFh5Hf0Djc9VQDja0DQjqnAz6rMSDQw8jSO_h8mVjRABZmhcYPqUxRX9mWrJnIvBsqgTC1k14Q897A43Z2qFPbMe4pwUa0u5z5M93vOe8Y3sh7FIUURmI8W1ZbY2pOZSe4brouoexTfwuLbLbCaQ'); border-radius: 20px;">
+<!-- Placeholder overlay to simulate specific vector mascot if image isn't perfect -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-48 h-48 bg-primary rounded-tr-[50%] rounded-tl-[50%] rounded-br-[40%] rounded-bl-[40%] shadow-inner flex flex-col items-center justify-center relative overflow-hidden" style="border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;">
+<!-- Highlight -->
+<div class="absolute top-6 right-8 w-8 h-12 bg-white/20 rounded-full rotate-[15deg] blur-sm"></div>
+<!-- Face -->
+<div class="flex gap-6 mt-4">
+<div class="w-4 h-6 bg-slate-900 rounded-full"></div>
+<div class="w-4 h-6 bg-slate-900 rounded-full"></div>
+</div>
+<div class="w-8 h-4 border-b-4 border-slate-900 rounded-full mt-1"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Progress Mini-Card -->
+<div class="w-full bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 mb-8">
+<div class="flex justify-between items-center mb-2">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">Daily Goal</span>
+<span class="text-slate-900 dark:text-white text-base font-bold">750ml <span class="text-slate-400 font-medium">/ 2000ml</span></span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+<div class="bg-primary h-full rounded-full relative" style="width: 37%;">
+<div class="absolute top-0 right-0 bottom-0 left-0 bg-white/20 animate-pulse"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Actions -->
+<footer class="p-6 pb-10 w-full max-w-md mx-auto flex flex-col gap-3 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark">
+<!-- Log Water Button -->
+<button class="group w-full h-14 bg-primary hover:bg-blue-500 active:scale-[0.98] transition-all duration-200 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+<span class="material-symbols-outlined mr-2 group-hover:animate-bounce" style="font-size: 24px;">water_drop</span>
+<span class="text-lg font-bold tracking-wide">Log Water (250ml)</span>
+</button>
+<!-- Snooze Button -->
+<button class="w-full h-14 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all duration-200 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200">
+<span class="material-symbols-outlined mr-2 text-slate-400 dark:text-slate-400" style="font-size: 24px;">snooze</span>
+<span class="text-base font-bold">Snooze for 15m</span>
+</button>
+<button class="mt-2 text-sm text-slate-400 font-medium hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            Skip for now
+        </button>
+</footer>
+</body></html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reminder Schedule - Water Reminder App</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#279df1",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101b22",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem", 
+                        "lg": "1rem", 
+                        "xl": "1.5rem", 
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased selection:bg-primary/20">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-slate-900 shadow-xl border-x border-slate-100 dark:border-slate-800">
+<!-- Header -->
+<div class="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 px-6 pt-12 pb-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">Reminder Schedule</h1>
+</div>
+<button class="group flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-300">
+<span class="material-symbols-outlined text-[24px]">add</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 flex flex-col gap-4 p-6 overflow-y-auto pb-24">
+<!-- Hero Illustration/Card -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-400 p-6 shadow-lg shadow-primary/20 text-white mb-2">
+<div class="relative z-10">
+<div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+<span class="material-symbols-outlined text-[28px]">water_drop</span>
+</div>
+<h2 class="text-2xl font-bold mb-1">Daily Goal</h2>
+<p class="text-blue-50 text-sm font-medium mb-4">You're on track for 2,500ml today</p>
+<div class="w-full bg-black/20 rounded-full h-2.5 mb-1">
+<div class="bg-white h-2.5 rounded-full" style="width: 45%"></div>
+</div>
+<div class="flex justify-between text-xs font-medium text-blue-100 opacity-80">
+<span>1,125ml</span>
+<span>2,500ml</span>
+</div>
+</div>
+<!-- Decorative Circles -->
+<div class="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-white/10 blur-2xl"></div>
+<div class="absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+</div>
+<!-- Section Title -->
+<div class="flex items-center justify-between mt-2">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Upcoming</h3>
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md">4 Active</span>
+</div>
+<!-- List Item 1 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-primary">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">wb_twilight</span>
+</div>
+<div class="flex flex-col">
+<p class="text-lg font-bold text-slate-900 dark:text-white leading-none">08:00 AM</p>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Wake up water</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full bg-slate-200 dark:bg-slate-700 transition-colors has-[:checked]:bg-primary">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+</label>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-primary">
+<span class="material-symbols-outlined text-[24px]">water_bottle</span>
+</div>
+<div class="flex flex-col">
+<p class="text-lg font-bold text-slate-900 dark:text-white leading-none">11:00 AM</p>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Mid-morning sip</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full bg-slate-200 dark:bg-slate-700 transition-colors has-[:checked]:bg-primary">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+</label>
+</div>
+</div>
+<!-- List Item 3 (Disabled) -->
+<div class="group relative flex items-center justify-between gap-4 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-700/50 p-4 opacity-75 transition-all hover:opacity-100">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+<span class="material-symbols-outlined text-[24px]">lunch_dining</span>
+</div>
+<div class="flex flex-col">
+<p class="text-lg font-bold text-slate-500 dark:text-slate-400 leading-none">02:00 PM</p>
+<p class="text-sm font-medium text-slate-400 dark:text-slate-500 mt-1">Lunch hydration</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full bg-slate-200 dark:bg-slate-700 transition-colors has-[:checked]:bg-primary">
+<input class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+</label>
+</div>
+</div>
+<!-- List Item 4 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-primary">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">local_cafe</span>
+</div>
+<div class="flex flex-col">
+<p class="text-lg font-bold text-slate-900 dark:text-white leading-none">05:00 PM</p>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Afternoon refill</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full bg-slate-200 dark:bg-slate-700 transition-colors has-[:checked]:bg-primary">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+</label>
+</div>
+</div>
+<!-- List Item 5 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-primary">
+<span class="material-symbols-outlined text-[24px]">bedtime</span>
+</div>
+<div class="flex flex-col">
+<p class="text-lg font-bold text-slate-900 dark:text-white leading-none">09:00 PM</p>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Evening glass</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full bg-slate-200 dark:bg-slate-700 transition-colors has-[:checked]:bg-primary">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+</label>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="flex border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 pb-6 pt-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">water_drop</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary dark:text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Schedule</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">bar_chart</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">History</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Settings</p>
+</a>
+</div>
+</div>
+</body></html>
