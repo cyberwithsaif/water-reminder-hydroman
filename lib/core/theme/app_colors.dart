@@ -4,8 +4,16 @@ class AppColors {
   AppColors._();
 
   // Primary palette
-  static const Color primary = Color(0xFF279DF1);
-  static const Color primaryDark = Color(0xFF1B7AC2);
+  static const Color primary = Color(0xFF2196F3);
+  static const Color primaryDark = Color(0xFF1976D2);
+
+  // Orange Theme
+  static const Color orangePrimary = Color(0xFFFF9800);
+  static const Color orangePrimaryDark = Color(0xFFF57C00);
+
+  // Green Theme
+  static const Color greenPrimary = Color(0xFF4CAF50);
+  static const Color greenPrimaryDark = Color(0xFF388E3C);
   static const Color primaryLight = Color(0xFFD4EBFC);
 
   // Backgrounds

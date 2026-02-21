@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
         } else {
             query = `SELECT id, amount_ml, cup_type, timestamp, deleted, updated_at
                FROM water_logs
-               WHERE user_id = $1
+               WHERE user_id = $1 AND deleted = FALSE
                ORDER BY timestamp DESC`;
             params = [req.userId];
         }
@@ -48,15 +48,16 @@ router.post('/sync', async (req, res) => {
 
         for (const log of logs) {
             const result = await pool.query(
-                `INSERT INTO water_logs (id, user_id, amount_ml, cup_type, timestamp, updated_at)
-         VALUES ($1, $2, $3, $4, $5, NOW())
+                `INSERT INTO water_logs (id, user_id, amount_ml, cup_type, timestamp, deleted, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
          ON CONFLICT (id) DO UPDATE SET
            amount_ml = EXCLUDED.amount_ml,
            cup_type = EXCLUDED.cup_type,
            timestamp = EXCLUDED.timestamp,
+           deleted = EXCLUDED.deleted,
            updated_at = NOW()
          RETURNING id, amount_ml, cup_type, timestamp, deleted, updated_at`,
-                [log.id, req.userId, log.amount_ml, log.cup_type || 'glass', log.timestamp]
+                [log.id, req.userId, log.amount_ml, log.cup_type || 'glass', log.timestamp, log.deleted ? true : false]
             );
             upserted.push(result.rows[0]);
         }

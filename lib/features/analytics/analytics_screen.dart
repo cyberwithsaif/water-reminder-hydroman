@@ -21,21 +21,30 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final weeklyData = ref.watch(weeklyDataProvider);
+    final monthlyData = ref.watch(monthlyDataProvider);
     final yearlyData = ref.watch(yearlyDataProvider);
     final streak = ref.watch(streakProvider);
     final weeklyAvg = ref.watch(weeklyAverageProvider);
     final profile = ref.watch(userProfileProvider);
     final goal = profile?.dailyGoalMl ?? 2500;
-    final todayLogs = ref.watch(todayLogsProvider);
     final historyLogs = ref.watch(logsForDateProvider(_historyDate));
 
     final isWeekly = _selectedRange == 'This Week';
-    final chartData = isWeekly ? weeklyData : yearlyData;
+    final isYearly = _selectedRange == 'Months';
+
+    Map<int, int> chartData;
+    if (isWeekly) {
+      chartData = weeklyData;
+    } else {
+      chartData = yearlyData;
+    }
 
     // Calculate completion percentage based on range
-    final totalDaysInRange = isWeekly ? 7 : 12; // Week vs Year (Months)
+    final totalDaysInRange = isWeekly ? 7 : 0;
     final daysCompleted = chartData.values.where((v) => v >= goal).length;
-    final completionPct = (daysCompleted / totalDaysInRange * 100).round();
+    final completionPct = totalDaysInRange > 0
+        ? (daysCompleted / totalDaysInRange * 100).round()
+        : 0;
 
     // Calculate dynamic maxY to prevent overflow
     final maxValue = chartData.values.isEmpty
@@ -75,7 +84,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
-                    children: ['This Week', 'This Month'].map((range) {
+                    children: ['This Week', 'Months'].map((range) {
                       final isSelected = _selectedRange == range;
                       return Expanded(
                         child: GestureDetector(
@@ -90,9 +99,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.05,
-                                        ),
+                                        color: Colors.black.withOpacity(0.05),
                                         blurRadius: 4,
                                       ),
                                     ]
@@ -105,7 +112,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: isSelected
-                                      ? AppColors.primary
+                                      ? Theme.of(context).primaryColor
                                       : AppColors.textTertiary,
                                 ),
                               ),
@@ -136,12 +143,74 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                           BarChartData(
                             alignment: BarChartAlignment.spaceAround,
                             maxY: dynamicMaxY,
-                            barTouchData: BarTouchData(enabled: false),
+                            barTouchData: BarTouchData(
+                              enabled: true,
+                              touchTooltipData: BarTouchTooltipData(
+                                getTooltipColor: (group) => Colors.blueGrey,
+                                tooltipPadding: const EdgeInsets.all(8),
+                                tooltipMargin: 8,
+                                getTooltipItem:
+                                    (group, groupIndex, rod, rodIndex) {
+                                      return BarTooltipItem(
+                                        '${rod.toY.toInt()} ml',
+                                        GoogleFonts.manrope(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      );
+                                    },
+                              ),
+                              touchCallback: (event, response) {
+                                if (event is FlTapUpEvent) {
+                                  if (response != null &&
+                                      response.spot != null) {
+                                    final index =
+                                        response.spot!.touchedBarGroupIndex;
+                                    final xValue =
+                                        response.spot!.touchedBarGroup.x;
+
+                                    final now = DateTime.now();
+                                    DateTime selectedDate;
+
+                                    if (isWeekly) {
+                                      // 0 = Monday, ..., 6 = Sunday
+                                      final monday = now.subtract(
+                                        Duration(days: now.weekday - 1),
+                                      );
+                                      selectedDate = DateTime(
+                                        monday.year,
+                                        monday.month,
+                                        monday.day + xValue,
+                                      );
+                                    } else {
+                                      // Yearly (Months): xValue is month index (0-11)
+                                      selectedDate = DateTime(
+                                        now.year,
+                                        xValue + 1,
+                                        1,
+                                      );
+                                    }
+
+                                    // Prevent selecting future dates
+                                    if (selectedDate.isBefore(
+                                      now.add(const Duration(seconds: 1)),
+                                    )) {
+                                      setState(
+                                        () => _historyDate = selectedDate,
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                            ),
                             titlesData: FlTitlesData(
                               show: true,
                               bottomTitles: AxisTitles(
                                 sideTitles: SideTitles(
                                   showTitles: true,
+                                  reservedSize: 30,
+                                  interval: 1,
                                   getTitlesWidget: (value, meta) {
                                     if (isWeekly) {
                                       const days = [
@@ -153,7 +222,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                         'Sat',
                                         'Sun',
                                       ];
-                                      if (value.toInt() >= days.length) {
+                                      if (value.toInt() < 0 ||
+                                          value.toInt() >= days.length) {
                                         return const SizedBox.shrink();
                                       }
                                       return Padding(
@@ -168,7 +238,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                         ),
                                       );
                                     } else {
-                                      // Monthly/Yearly (Months)
+                                      // Yearly (Months)
                                       const months = [
                                         'Jan',
                                         'Feb',
@@ -183,13 +253,14 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                         'Nov',
                                         'Dec',
                                       ];
-                                      if (value.toInt() >= months.length) {
+                                      final index = value.toInt();
+                                      if (index < 0 || index >= 12) {
                                         return const SizedBox.shrink();
                                       }
                                       return Padding(
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Text(
-                                          months[value.toInt()],
+                                          months[index],
                                           style: GoogleFonts.manrope(
                                             fontSize: 9,
                                             fontWeight: FontWeight.w600,
@@ -223,11 +294,15 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                         color:
                                             (isWeekly == false ||
                                                 entry.value >= goal)
-                                            ? AppColors.primary
-                                            : AppColors.primary.withValues(
-                                                alpha: 0.4,
-                                              ),
-                                        width: isWeekly ? 22 : 10,
+                                            ? Theme.of(context).primaryColor
+                                            : Theme.of(
+                                                context,
+                                              ).primaryColor.withOpacity(0.4),
+                                        width: isWeekly
+                                            ? 22
+                                            : isYearly
+                                            ? 16
+                                            : 10,
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(4),
                                           topRight: Radius.circular(4),
@@ -248,7 +323,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                             width: 12,
                             height: 3,
                             decoration: BoxDecoration(
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -277,7 +352,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         label: 'Daily Average',
                         value: '${weeklyAvg.round()} ml',
                         icon: Icons.analytics,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -327,7 +402,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         ),
                       ),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: Theme.of(context).primaryColor,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                     ),
@@ -379,11 +454,13 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                             height: 40,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.blue.shade50,
+                              color: Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.1),
                             ),
                             child: Icon(
                               _getCupIcon(log.cupType),
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                               size: 20,
                             ),
                           ),
@@ -438,7 +515,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       case 'espresso':
         return Icons.coffee;
       case 'glass':
-        return Icons.water_drop;
+        return Icons.local_drink;
       case 'bottle':
         return Icons.water;
       case 'sports':

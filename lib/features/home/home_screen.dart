@@ -66,7 +66,36 @@ class HomeScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 40),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.amber.shade200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.stars,
+                            color: Colors.amber,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${profile?.hydroCoins ?? 0} HC',
+                            style: GoogleFonts.manrope(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.amber.shade900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -102,7 +131,7 @@ class HomeScreen extends ConsumerWidget {
                       label: 'Average',
                       value: '${weeklyAvg.round()} ml',
                       icon: Icons.show_chart,
-                      iconColor: AppColors.primary,
+                      iconColor: Theme.of(context).primaryColor,
                     ),
                   ],
                 ),
@@ -150,75 +179,82 @@ class HomeScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Builder(builder: (context) {
-                      final defaultCup = profile?.defaultCupMl ?? 250;
-                      final defaultIcon = defaultCup <= 100
-                          ? Icons.coffee
-                          : defaultCup <= 250
-                              ? Icons.local_cafe
-                              : defaultCup <= 500
-                                  ? Icons.water
-                                  : Icons.sports_gymnastics;
-                      final defaultLabel = defaultCup <= 100
-                          ? 'espresso'
-                          : defaultCup <= 250
-                              ? 'glass'
-                              : defaultCup <= 500
-                                  ? 'bottle'
-                                  : 'sports';
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: _QuickAddButton(
-                              icon: defaultIcon,
-                              amount: defaultCup,
-                              isPrimary: true,
-                              onTap: () {
-                                ref
-                                    .read(todayLogsProvider.notifier)
-                                    .addWater(defaultCup, cupType: defaultLabel);
-                              },
+                    Builder(
+                      builder: (context) {
+                        final defaultCup = profile?.defaultCupMl ?? 250;
+                        final defaultIcon = defaultCup <= 100
+                            ? Icons.coffee
+                            : defaultCup <= 250
+                            ? Icons.local_drink
+                            : defaultCup <= 500
+                            ? Icons.water
+                            : Icons.sports_gymnastics;
+                        final defaultLabel = defaultCup <= 100
+                            ? 'espresso'
+                            : defaultCup <= 250
+                            ? 'glass'
+                            : defaultCup <= 500
+                            ? 'bottle'
+                            : 'sports';
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: _QuickAddButton(
+                                icon: defaultIcon,
+                                amount: defaultCup,
+                                isPrimary: true,
+                                onTap: () {
+                                  ref
+                                      .read(todayLogsProvider.notifier)
+                                      .addWater(
+                                        defaultCup,
+                                        cupType: defaultLabel,
+                                      );
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _QuickAddButton(
-                              icon: Icons.water,
-                              amount: 500,
-                              isPrimary: false,
-                              onTap: () {
-                                ref
-                                    .read(todayLogsProvider.notifier)
-                                    .addWater(500, cupType: 'bottle');
-                              },
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _QuickAddButton(
+                                icon: Icons.water,
+                                amount: 500,
+                                isPrimary: false,
+                                onTap: () {
+                                  ref
+                                      .read(todayLogsProvider.notifier)
+                                      .addWater(500, cupType: 'bottle');
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/cup-selection'),
-                            child: Container(
-                              width: 92,
-                              height: 92,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.grey.shade300,
-                                  width: 2,
-                                  strokeAlign: BorderSide.strokeAlignInside,
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                '/cup-selection',
+                              ),
+                              child: Container(
+                                width: 92,
+                                height: 92,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                    width: 2,
+                                    strokeAlign: BorderSide.strokeAlignInside,
+                                  ),
+                                  color: Colors.grey.shade50,
                                 ),
-                                color: Colors.grey.shade50,
-                              ),
-                              child: const Icon(
-                                Icons.add,
-                                size: 28,
-                                color: AppColors.textTertiary,
+                                child: const Icon(
+                                  Icons.add,
+                                  size: 28,
+                                  color: AppColors.textTertiary,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    }),
+                          ],
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -245,11 +281,13 @@ class HomeScreen extends ConsumerWidget {
                           height: 40,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.blue.shade50,
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.1),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.notifications_active,
-                            color: AppColors.primary,
+                            color: Theme.of(context).primaryColor,
                             size: 20,
                           ),
                         ),
@@ -300,7 +338,10 @@ class HomeScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: LinearGradient(
-                      colors: [Colors.blue.shade50, Colors.white],
+                      colors: [
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        Colors.white,
+                      ],
                     ),
                     border: Border.all(color: AppColors.cardBorder),
                   ),
@@ -314,7 +355,7 @@ class HomeScreen extends ConsumerWidget {
                               children: [
                                 Icon(
                                   Icons.lightbulb,
-                                  color: AppColors.primary,
+                                  color: Theme.of(context).primaryColor,
                                   size: 18,
                                 ),
                                 const SizedBox(width: 6),
@@ -323,7 +364,7 @@ class HomeScreen extends ConsumerWidget {
                                   style: GoogleFonts.manrope(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
-                                    color: AppColors.primary,
+                                    color: Theme.of(context).primaryColor,
                                     letterSpacing: 1,
                                   ),
                                 ),
@@ -349,11 +390,13 @@ class HomeScreen extends ConsumerWidget {
                         height: 56,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.blue.shade100,
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.1),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.water_drop,
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                           size: 28,
                         ),
                       ),
@@ -443,11 +486,15 @@ class _QuickAddButton extends StatelessWidget {
         height: 92,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: isPrimary ? AppColors.primary : Colors.grey.shade100,
+          color: isPrimary
+              ? Theme.of(context).primaryColor
+              : Colors.grey.shade100,
           boxShadow: isPrimary
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -460,7 +507,7 @@ class _QuickAddButton extends StatelessWidget {
             Icon(
               icon,
               size: 24,
-              color: isPrimary ? Colors.white : AppColors.primary,
+              color: isPrimary ? Colors.white : Theme.of(context).primaryColor,
             ),
             const SizedBox(height: 8),
             Text(
@@ -468,7 +515,9 @@ class _QuickAddButton extends StatelessWidget {
               style: GoogleFonts.manrope(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: isPrimary ? Colors.white : AppColors.primary,
+                color: isPrimary
+                    ? Colors.white
+                    : Theme.of(context).primaryColor,
               ),
             ),
           ],
@@ -530,8 +579,10 @@ class _WaterProgressIndicatorState extends State<WaterProgressIndicator>
                   progress: widget.progress,
                   waveValue: _controller.value,
                   backgroundColor: Colors.grey.shade100,
-                  waterColor: AppColors.primary.withValues(alpha: 0.15),
-                  progressColor: AppColors.primary,
+                  waterColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.15),
+                  progressColor: Theme.of(context).primaryColor,
                 ),
               );
             },
@@ -539,7 +590,11 @@ class _WaterProgressIndicatorState extends State<WaterProgressIndicator>
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.water_drop, color: AppColors.primary, size: 36),
+              Icon(
+                Icons.water_drop,
+                color: Theme.of(context).primaryColor,
+                size: 36,
+              ),
               const SizedBox(height: 4),
               Text(
                 '${widget.intake}',

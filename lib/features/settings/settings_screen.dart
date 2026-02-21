@@ -82,8 +82,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: AppColors.primary,
+                  borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor,
                     width: 2,
                   ),
                 ),
@@ -100,7 +100,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -181,8 +181,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
+                          borderSide: BorderSide(
+                            color: Theme.of(context).primaryColor,
                             width: 2,
                           ),
                         ),
@@ -218,7 +218,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -251,7 +251,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.grey.shade100,
+          color: isSelected
+              ? Theme.of(context).primaryColor
+              : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -314,12 +316,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isActive
-                              ? AppColors.primary
+                              ? Theme.of(context).primaryColor
                               : AppColors.cardBorder,
                           width: isActive ? 2 : 1,
                         ),
                         color: isActive
-                            ? AppColors.primary.withValues(alpha: 0.05)
+                            ? Theme.of(context).primaryColor.withOpacity(0.05)
                             : Colors.white,
                       ),
                       child: Row(
@@ -327,7 +329,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           Icon(
                             icons[i],
                             color: isActive
-                                ? AppColors.primary
+                                ? Theme.of(context).primaryColor
                                 : AppColors.textSecondary,
                             size: 22,
                           ),
@@ -340,9 +342,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                           const Spacer(),
                           if (isActive)
-                            const Icon(
+                            Icon(
                               Icons.check_circle,
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                               size: 22,
                             ),
                         ],
@@ -366,7 +368,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -451,7 +453,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -489,11 +491,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isActive ? AppColors.primary : AppColors.cardBorder,
+            color: isActive
+                ? Theme.of(context).primaryColor
+                : AppColors.cardBorder,
             width: isActive ? 2 : 1,
           ),
           color: isActive
-              ? AppColors.primary.withValues(alpha: 0.05)
+              ? Theme.of(context).primaryColor.withOpacity(0.05)
               : Colors.white,
         ),
         child: Row(
@@ -520,9 +524,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const Spacer(),
             if (isActive)
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 22,
               ),
           ],
@@ -688,8 +692,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: AppColors.primary,
+                  borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor,
                     width: 2,
                   ),
                 ),
@@ -718,7 +722,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -726,6 +730,105 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ====== Theme Selection ======
+  String _getThemeLabel(String theme) {
+    switch (theme) {
+      case 'orange':
+        return 'Orange (Vibrant)';
+      case 'green':
+        return 'Green (Fresh)';
+      default:
+        return 'Default (Blue)';
+    }
+  }
+
+  void _showThemeSelector() {
+    final profile = ref.read(userProfileProvider);
+    if (profile == null) return;
+
+    final themes = ['blue', 'orange', 'green'];
+    final labels = ['Default Blue', 'Vibrant Orange', 'Fresh Green'];
+    final colors = [
+      AppColors.primary,
+      AppColors.orangePrimary,
+      AppColors.greenPrimary,
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          MediaQuery.of(ctx).padding.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Select App Theme',
+              style: GoogleFonts.manrope(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ...List.generate(themes.length, (i) {
+              final isActive = profile.themeName == themes[i];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: InkWell(
+                  onTap: () {
+                    ref
+                        .read(userProfileProvider.notifier)
+                        .updateTheme(themes[i]);
+                    Navigator.pop(ctx);
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isActive ? colors[i] : AppColors.cardBorder,
+                        width: isActive ? 2 : 1,
+                      ),
+                      color: isActive
+                          ? colors[i].withOpacity(0.1)
+                          : Colors.white,
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(radius: 12, backgroundColor: colors[i]),
+                        const SizedBox(width: 16),
+                        Text(
+                          labels[i],
+                          style: GoogleFonts.manrope(
+                            fontWeight: isActive
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (isActive)
+                          Icon(Icons.check_circle, color: colors[i], size: 22),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -776,11 +879,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryDark],
+                      colors: [
+                        Theme.of(context).primaryColor,
+                        Theme.of(context).primaryColorDark,
+                      ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: Theme.of(context).primaryColor.withOpacity(0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -892,8 +998,77 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               const SizedBox(height: 8),
 
-              // System Status section
-              _SectionHeader(title: 'SYSTEM STATUS'),
+              // Appearance section
+              _SectionHeader(title: 'APPEARANCE'),
+              _SettingsTile(
+                icon: Icons.palette_outlined,
+                title: 'Theme Color',
+                subtitle: _getThemeLabel(profile?.themeName ?? 'blue'),
+                onTap: _showThemeSelector,
+              ),
+
+              const SizedBox(height: 8),
+
+              // Notifications section
+              _SectionHeader(title: 'NOTIFICATIONS'),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 2,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.notifications_active_outlined,
+                        size: 22,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Daily Reminders',
+                              style: GoogleFonts.manrope(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              _notificationsEnabled
+                                  ? 'Reminders are active'
+                                  : 'Reminders are off',
+                              style: GoogleFonts.manrope(
+                                fontSize: 12,
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: _notificationsEnabled,
+                        onChanged: _toggleNotifications,
+                        activeTrackColor: Theme.of(context).primaryColor,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              // Permission status (only show if missing)
               FutureBuilder<String>(
                 future: NotificationService.instance.getDebugInfo(),
                 builder: (context, snapshot) {
@@ -901,55 +1076,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   final hasNotif = info.contains('Permission: true');
                   final hasAlarm = info.contains('Exact alarm: true');
 
+                  if (hasNotif && hasAlarm) return const SizedBox.shrink();
+
                   return Column(
                     children: [
-                      _SettingsTile(
-                        icon: Icons.notifications_active_outlined,
-                        title: 'Notifications',
-                        subtitle: hasNotif
-                            ? 'Permission Granted'
-                            : 'Permission Missing',
-                        trailing: hasNotif
-                            ? null
-                            : TextButton(
-                                onPressed: () async {
-                                  await NotificationService.instance
-                                      .requestPermission();
-                                  setState(() {});
-                                },
-                                child: Text(
-                                  'Request',
-                                  style: GoogleFonts.manrope(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                      if (!hasNotif)
+                        _SettingsTile(
+                          icon: Icons.warning_amber_outlined,
+                          title: 'Notification Permission',
+                          subtitle: 'Required for reminders to work',
+                          trailing: TextButton(
+                            onPressed: () async {
+                              await NotificationService.instance
+                                  .requestPermission();
+                              // Reschedule after granting permission
+                              await ref
+                                  .read(remindersProvider.notifier)
+                                  .scheduleNotifications();
+                              setState(() {});
+                            },
+                            child: Text(
+                              'Grant',
+                              style: GoogleFonts.manrope(
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.w700,
                               ),
-                        onTap: () {},
-                      ),
-                      _SettingsTile(
-                        icon: Icons.alarm_on_outlined,
-                        title: 'Exact Reminders',
-                        subtitle: hasAlarm
-                            ? 'Enabled'
-                            : 'Disabled (May be late)',
-                        trailing: hasAlarm
-                            ? null
-                            : TextButton(
-                                onPressed: () async {
-                                  await PermissionService.requestAll();
-                                  setState(() {});
-                                },
-                                child: Text(
-                                  'Fix Now',
-                                  style: GoogleFonts.manrope(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                            ),
+                          ),
+                          onTap: () {},
+                        ),
+                      if (!hasAlarm)
+                        _SettingsTile(
+                          icon: Icons.alarm_on_outlined,
+                          title: 'Exact Alarm Permission',
+                          subtitle: 'Needed for on-time reminders',
+                          trailing: TextButton(
+                            onPressed: () async {
+                              await PermissionService.requestAll();
+                              // Reschedule after granting permission
+                              await ref
+                                  .read(remindersProvider.notifier)
+                                  .scheduleNotifications();
+                              setState(() {});
+                            },
+                            child: Text(
+                              'Grant',
+                              style: GoogleFonts.manrope(
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.w700,
                               ),
-                        onTap: () {},
-                      ),
+                            ),
+                          ),
+                          onTap: () {},
+                        ),
                     ],
                   );
                 },
@@ -1001,7 +1180,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                           ],
                         ),
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Theme.of(context).primaryColor,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

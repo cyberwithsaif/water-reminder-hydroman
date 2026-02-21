@@ -3,17 +3,22 @@ import '../models/user_profile.dart';
 import '../../core/constants/app_constants.dart';
 
 class UserRepository {
-  late Box<UserProfile> _box;
+  Box<UserProfile> get _box =>
+      Hive.box<UserProfile>(AppConstants.userProfileBox);
 
   Future<void> init() async {
-    _box = await Hive.openBox<UserProfile>(AppConstants.userProfileBox);
+    if (!Hive.isBoxOpen(AppConstants.userProfileBox)) {
+      await Hive.openBox<UserProfile>(AppConstants.userProfileBox);
+    }
   }
 
   UserProfile? getProfile() {
+    if (!Hive.isBoxOpen(AppConstants.userProfileBox)) return null;
     return _box.get('profile');
   }
 
   Future<void> saveProfile(UserProfile profile) async {
+    await init();
     await _box.put('profile', profile);
   }
 
@@ -23,6 +28,7 @@ class UserRepository {
   }
 
   Future<void> updateGoal(int goalMl) async {
+    await init();
     final profile = getProfile();
     if (profile != null) {
       profile.dailyGoalMl = goalMl;

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-import 'core/theme/app_theme.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/reminders/reminder_schedule_screen.dart';
@@ -15,6 +14,8 @@ import 'features/settings/daily_goal_screen.dart';
 import 'core/widgets/app_scaffold.dart';
 import 'features/auth/login_screen.dart';
 import 'features/reminders/reminder_prompt_screen.dart';
+
+import 'providers/theme_provider.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -31,16 +32,19 @@ void main() {
   runApp(const ProviderScope(child: HydromanApp()));
 }
 
-class HydromanApp extends StatelessWidget {
+class HydromanApp extends ConsumerWidget {
   const HydromanApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final darkTheme = ref.watch(darkThemeProvider);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Hydroman',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: theme,
+      darkTheme: darkTheme,
       themeMode: ThemeMode.light,
       initialRoute: '/',
       routes: {

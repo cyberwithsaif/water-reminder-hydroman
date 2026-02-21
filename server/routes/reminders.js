@@ -37,6 +37,11 @@ router.post('/sync', async (req, res) => {
         const upserted = [];
 
         for (const r of reminders) {
+            if (r.deleted) {
+                await pool.query('DELETE FROM reminders WHERE id = $1 AND user_id = $2', [r.id, req.userId]);
+                continue;
+            }
+
             const result = await pool.query(
                 `INSERT INTO reminders (id, user_id, time, label, is_enabled, icon, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, NOW())
@@ -55,6 +60,25 @@ router.post('/sync', async (req, res) => {
         res.json({ synced: upserted.length, reminders: upserted });
     } catch (err) {
         console.error('Sync reminders error:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// DELETE /api/reminders/:id — hard delete
+router.delete('/:id', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `DELETE FROM reminders WHERE id = $1 AND user_id = $2 RETURNING id`,
+            [req.params.id, req.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Reminder not found' });
+        }
+
+        res.json({ deleted: true, id: req.params.id });
+    } catch (err) {
+        console.error('Delete reminder error:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });

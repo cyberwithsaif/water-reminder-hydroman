@@ -57,7 +57,7 @@ class SyncService {
               'amount_ml': log.amountMl,
               'cup_type': log.cupType,
               'timestamp': log.timestamp.toIso8601String(),
-              if (log.deletedAt != null) 'deleted': true,
+              'deleted': log.deletedAt != null,
             },
           )
           .toList();
@@ -108,8 +108,19 @@ class SyncService {
   Future<void> _syncReminders() async {
     final remBox = await Hive.openBox<Reminder>(AppConstants.reminderBox);
     final syncBox = await Hive.openBox(_syncBoxName);
+    final deletedBox = await Hive.openBox<bool>(
+      AppConstants.deletedReminderBox,
+    );
 
-    // Push
+    // First: ensure all blocklisted IDs are deleted from server
+    // (retry in case the immediate delete call failed previously)
+    for (final id in deletedBox.keys.toList()) {
+      try {
+        await _api.deleteReminder(id as String);
+      } catch (_) {}
+    }
+
+    // Push ALL local reminders including soft-deleted ones (so server knows they are deleted)
     final localReminders = remBox.values.toList();
     if (localReminders.isNotEmpty) {
       final data = localReminders
@@ -120,64 +131,57 @@ class SyncService {
               'label': r.label,
               'is_enabled': r.isEnabled,
               'icon': r.icon,
-              if (r.deletedAt != null) 'deleted': true,
+              'deleted': r.deletedAt != null,
             },
           )
           .toList();
       await _api.syncReminders(data);
-
-      // Purge local soft-deletes after successful sync
-      final toPurge = localReminders.where((r) => r.deletedAt != null);
-      for (final r in toPurge) {
-        // Hard-delete on server and then locally
-        await _api.deleteReminder(r.id);
-        await remBox.delete(r.id);
-      }
     }
 
-    // Pull
+    // Purge any lingering soft-deletes locally
+    final toPurge = localReminders.where((r) => r.deletedAt != null);
+    for (final r in toPurge) {
+      await _api.deleteReminder(r.id);
+      await remBox.delete(r.id);
+    }
+
+    // Pull from server
     final remoteReminders = await _api.getReminders();
-    final deletedBox = await Hive.openBox<bool>(
-      AppConstants.deletedReminderBox,
-    );
     int pulled = 0;
     int skipped = 0;
     for (final remote in remoteReminders) {
       final remoteMap = remote as Map<String, dynamic>;
       final id = remoteMap['id'];
 
-      // Check blocklist first (most important)
+      // Check blocklist — if we deleted it locally, delete from server too
       if (deletedBox.get(id) == true) {
         debugPrint(
-          'SyncService: Skipping ID $id because it is in DELETION BLOCKLIST',
+          'SyncService: Skipping & deleting ID $id (in DELETION BLOCKLIST)',
         );
-        // Still exists on server but we deleted it locally
         await _api.deleteReminder(id);
         skipped++;
         continue;
       }
 
       if (remoteMap['deleted'] == true) {
-        debugPrint(
-          'SyncService: Removing ID $id because server says it is DELETED',
-        );
-        // Deleted on server → HARD remove locally
+        debugPrint('SyncService: Removing ID $id (server says DELETED)');
         await remBox.delete(id);
-        // Also remove from blocklist to keep it clean (server confirmed delete)
         await deletedBox.delete(id);
         continue;
       }
 
       final existing = remBox.get(id);
       if (existing != null) {
-        // Update existing if needed, but for now just skip to avoid duplicates
-        // Note: We could check if fields changed here
-        continue;
-      }
-
-      // FINAL DEFENSE: Check if we JUST deleted it in this sync cycle or previously
-      if (deletedBox.get(id) == true) {
-        debugPrint('SyncService: Final defense triggered for ID $id');
+        // Update existing reminder from server if fields changed
+        if (existing.time != remoteMap['time'] ||
+            existing.label != (remoteMap['label'] ?? '') ||
+            existing.isEnabled != (remoteMap['is_enabled'] ?? true)) {
+          existing.time = remoteMap['time'];
+          existing.label = remoteMap['label'] ?? '';
+          existing.isEnabled = remoteMap['is_enabled'] ?? true;
+          existing.icon = remoteMap['icon'] ?? 'water_drop';
+          await existing.save();
+        }
         continue;
       }
 

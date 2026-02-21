@@ -130,7 +130,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(
               context,
-            ).colorScheme.copyWith(primary: AppColors.primary),
+            ).colorScheme.copyWith(primary: Theme.of(context).primaryColor),
           ),
           child: child!,
         );
@@ -198,8 +198,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       value: (_currentStep + 1) / 4,
                       minHeight: 8,
                       backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.primary,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
                       ),
                     ),
                   ),
@@ -240,17 +240,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: ElevatedButton(
                   onPressed: _isSaving ? null : _nextStep,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.primary.withValues(
-                      alpha: 0.6,
-                    ),
+                    disabledBackgroundColor: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.6),
                     disabledForegroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 4,
-                    shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                    shadowColor: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                   ),
                   child: _isSaving
                       ? const SizedBox(
@@ -308,7 +310,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.1),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -364,8 +368,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.primary,
+                borderSide: BorderSide(
+                  color: Theme.of(context).primaryColor,
                   width: 2,
                 ),
               ),
@@ -512,11 +516,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.cardBorder,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : AppColors.cardBorder,
                 width: isSelected ? 2 : 1,
               ),
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.05)
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
                   : Colors.white,
             ),
             child: Row(
@@ -527,7 +533,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isSelected
-                        ? AppColors.primary
+                        ? Theme.of(context).primaryColor
                         : Colors.grey.shade100,
                   ),
                   child: Icon(
@@ -553,11 +559,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected
-                          ? AppColors.primary
+                          ? Theme.of(context).primaryColor
                           : Colors.grey.shade300,
                       width: 2,
                     ),
-                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    color: isSelected
+                        ? Theme.of(context).primaryColor
+                        : Colors.transparent,
                   ),
                   child: isSelected
                       ? const Icon(Icons.check, size: 14, color: Colors.white)
@@ -604,7 +612,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: isSelected
-                      ? AppColors.primary
+                      ? Theme.of(context).primaryColor
                       : AppColors.textTertiary,
                 ),
               ),
@@ -724,20 +732,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.verified, color: AppColors.primary, size: 18),
+                      Icon(
+                        Icons.verified,
+                        color: Theme.of(context).primaryColor,
+                        size: 18,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'Recommended',
                         style: GoogleFonts.manrope(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     ],
@@ -757,14 +771,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 SliderTheme(
                   data: SliderThemeData(
                     trackHeight: 12,
-                    activeTrackColor: AppColors.primary,
+                    activeTrackColor: Theme.of(context).primaryColor,
                     inactiveTrackColor: Colors.grey.shade100,
                     thumbColor: Colors.white,
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 16,
                       elevation: 4,
                     ),
-                    overlayColor: AppColors.primary.withValues(alpha: 0.15),
+                    overlayColor: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.15),
                     trackShape: const RoundedRectSliderTrackShape(),
                   ),
                   child: Slider(
@@ -911,7 +927,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.water_drop, color: AppColors.primary),
+                  child: Icon(
+                    Icons.water_drop,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -951,11 +970,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.cardBorder,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : AppColors.cardBorder,
             width: isSelected ? 2 : 1,
           ),
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.05)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
               : Colors.white,
         ),
         child: Column(
@@ -967,10 +988,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.15)
+                    ? Theme.of(context).primaryColor.withValues(alpha: 0.15)
                     : Colors.grey.shade50,
               ),
-              child: Icon(icon, size: 28, color: AppColors.primary),
+              child: Icon(
+                icon,
+                size: 28,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -978,7 +1005,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               style: GoogleFonts.manrope(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : AppColors.textPrimary,
               ),
             ),
             Text(
@@ -986,7 +1015,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               style: GoogleFonts.manrope(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : AppColors.textSecondary,
                 letterSpacing: 1,
               ),
             ),
@@ -995,7 +1026,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 padding: const EdgeInsets.only(top: 4),
                 child: Icon(
                   Icons.check_circle,
-                  color: AppColors.primary,
+                  color: Theme.of(context).primaryColor,
                   size: 20,
                 ),
               ),

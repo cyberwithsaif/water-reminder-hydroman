@@ -112,8 +112,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       state = AuthState(token: token, phone: phone);
 
-      // Trigger sync after login
-      _sync.syncAll();
+      // Trigger sync after login and wait for it to complete so we can skip onboarding if they exist
+      await _sync.syncAll();
 
       return true;
     } on ApiException catch (e) {

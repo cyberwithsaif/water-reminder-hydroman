@@ -62,7 +62,7 @@ class CupSelectionScreen extends ConsumerWidget {
                       style: GoogleFonts.manrope(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                   ],
@@ -74,7 +74,9 @@ class CupSelectionScreen extends ConsumerWidget {
                     value: progress.clamp(0.0, 1.0),
                     minHeight: 10,
                     backgroundColor: Colors.grey.shade100,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                    valueColor: AlwaysStoppedAnimation(
+                      Theme.of(context).primaryColor,
+                    ),
                   ),
                 ),
               ],
@@ -112,7 +114,7 @@ class CupSelectionScreen extends ConsumerWidget {
                               _addAndPop(context, ref, 100, 'espresso'),
                         ),
                         _CupCard(
-                          icon: Icons.water_drop,
+                          icon: Icons.local_drink,
                           size: '250 ml',
                           label: 'Glass',
                           isSelected: false,
@@ -170,6 +172,7 @@ class CupSelectionScreen extends ConsumerWidget {
     String cupType,
   ) {
     ref.read(todayLogsProvider.notifier).addWater(amount, cupType: cupType);
+    ref.read(userProfileProvider.notifier).setDefaultCup(amount);
     Navigator.pop(context);
   }
 
@@ -247,11 +250,13 @@ class _CupCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.cardBorder,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : AppColors.cardBorder,
             width: isSelected ? 2 : 1,
           ),
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
+              ? Theme.of(context).primaryColor.withOpacity(0.1)
               : Colors.white,
         ),
         child: Stack(
@@ -262,7 +267,7 @@ class _CupCard extends StatelessWidget {
                 right: 12,
                 child: Icon(
                   Icons.check_circle,
-                  color: AppColors.primary,
+                  color: Theme.of(context).primaryColor,
                   size: 20,
                 ),
               ),
@@ -277,7 +282,11 @@ class _CupCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: isSelected ? Colors.white : Colors.grey.shade50,
                     ),
-                    child: Icon(icon, size: 28, color: AppColors.primary),
+                    child: Icon(
+                      icon,
+                      size: 28,
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -295,7 +304,7 @@ class _CupCard extends StatelessWidget {
                           ? FontWeight.w700
                           : FontWeight.w500,
                       color: isSelected
-                          ? AppColors.primary
+                          ? Theme.of(context).primaryColor
                           : AppColors.textSecondary,
                       letterSpacing: 1,
                     ),

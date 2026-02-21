@@ -8,11 +8,52 @@ import '../../providers/water_log_provider.dart';
 import '../../data/models/reminder.dart';
 import '../../core/widgets/banner_ad_widget.dart';
 
-class ReminderScheduleScreen extends ConsumerWidget {
+class ReminderScheduleScreen extends ConsumerStatefulWidget {
   const ReminderScheduleScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ReminderScheduleScreen> createState() =>
+      _ReminderScheduleScreenState();
+}
+
+class _ReminderScheduleScreenState
+    extends ConsumerState<ReminderScheduleScreen> {
+  final Set<String> _selectedIds = {};
+  bool _isSelectionMode = false;
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+        if (_selectedIds.isEmpty) _isSelectionMode = false;
+      } else {
+        _selectedIds.add(id);
+        _isSelectionMode = true;
+      }
+    });
+  }
+
+  void _selectAll(List<Reminder> reminders) {
+    setState(() {
+      if (_selectedIds.length == reminders.length) {
+        _selectedIds.clear();
+        _isSelectionMode = false;
+      } else {
+        _selectedIds.addAll(reminders.map((r) => r.id));
+        _isSelectionMode = true;
+      }
+    });
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final reminders = ref.watch(remindersProvider);
     final intake = ref.watch(todayIntakeProvider);
     final profile = ref.watch(userProfileProvider);
@@ -33,113 +74,155 @@ class ReminderScheduleScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Reminders',
+                      _isSelectionMode
+                          ? '${_selectedIds.length} Selected'
+                          : 'Reminders',
                       style: GoogleFonts.manrope(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.nightlight_round,
-                            color: AppColors.textSecondary,
+                    if (_isSelectionMode)
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              _selectedIds.length == reminders.length
+                                  ? Icons.deselect
+                                  : Icons.select_all,
+                              color: AppColors.textSecondary,
+                            ),
+                            onPressed: () => _selectAll(reminders),
                           ),
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/night-mute'),
-                        ),
-                      ],
-                    ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.redAccent,
+                            ),
+                            onPressed: () => _showBulkDeleteConfirmation(
+                              context,
+                              ref,
+                              _selectedIds.toList(),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: AppColors.textSecondary,
+                            ),
+                            onPressed: _exitSelectionMode,
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.nightlight_round,
+                              color: AppColors.textSecondary,
+                            ),
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/night-mute'),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
 
-              // Hero card
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryDark],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+              // Hero card (only show if not in selection mode or keep it for context?)
+              // Let's hide it in selection mode to focus on the list
+              if (!_isSelectionMode)
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).primaryColor,
+                          Theme.of(context).primaryColorDark,
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Daily Goal',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white70,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '$intake / ${goal}ml',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: LinearProgressIndicator(
-                                value: progress,
-                                minHeight: 8,
-                                backgroundColor: Colors.white24,
-                                valueColor: const AlwaysStoppedAnimation(
-                                  Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Daily Goal',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                '$intake / ${goal}ml',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  minHeight: 8,
+                                  backgroundColor: Colors.white24,
+                                  valueColor: const AlwaysStoppedAnimation(
+                                    Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white24,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${(progress * 100).round()}%',
-                            style: GoogleFonts.manrope(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                        const SizedBox(width: 16),
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white24,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${(progress * 100).round()}%',
+                              style: GoogleFonts.manrope(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
               // Upcoming reminders label
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
                 child: Text(
-                  'UPCOMING REMINDERS',
+                  _isSelectionMode ? 'SELECT REMINDERS' : 'UPCOMING REMINDERS',
                   style: GoogleFonts.manrope(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -152,41 +235,77 @@ class ReminderScheduleScreen extends ConsumerWidget {
 
               // Reminder list
               ...reminders.map((reminder) {
+                final isSelected = _selectedIds.contains(reminder.id);
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 4,
                   ),
                   child: InkWell(
-                    onTap: () => _showReminderEditor(context, ref, reminder),
+                    onTap: () {
+                      if (_isSelectionMode) {
+                        _toggleSelection(reminder.id);
+                      } else {
+                        _showReminderEditor(context, ref, reminder);
+                      }
+                    },
+                    onLongPress: () {
+                      if (!_isSelectionMode) {
+                        _toggleSelection(reminder.id);
+                      }
+                    },
                     borderRadius: BorderRadius.circular(14),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.cardBorder),
-                        color: Colors.white,
+                        border: Border.all(
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : AppColors.cardBorder,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        color: isSelected
+                            ? Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.05)
+                            : Colors.white,
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: reminder.isEnabled
-                                  ? AppColors.primary.withValues(alpha: 0.1)
-                                  : Colors.grey.shade100,
+                          if (_isSelectionMode)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Icon(
+                                isSelected
+                                    ? Icons.check_circle
+                                    : Icons.radio_button_unchecked,
+                                color: isSelected
+                                    ? Theme.of(context).primaryColor
+                                    : AppColors.textTertiary,
+                              ),
+                            )
+                          else
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: reminder.isEnabled
+                                    ? Theme.of(
+                                        context,
+                                      ).primaryColor.withValues(alpha: 0.1)
+                                    : Colors.grey.shade100,
+                              ),
+                              child: Icon(
+                                Icons.notifications_active,
+                                color: reminder.isEnabled
+                                    ? Theme.of(context).primaryColor
+                                    : AppColors.textTertiary,
+                                size: 22,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.notifications_active,
-                              color: reminder.isEnabled
-                                  ? AppColors.primary
-                                  : AppColors.textTertiary,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
+                          if (!_isSelectionMode) const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,29 +328,37 @@ class ReminderScheduleScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.redAccent,
-                              size: 20,
+                          if (!_isSelectionMode)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.redAccent,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    _showDeleteConfirmation(
+                                      context,
+                                      ref,
+                                      reminder.id,
+                                    );
+                                  },
+                                ),
+                                Switch(
+                                  value: reminder.isEnabled,
+                                  onChanged: (val) {
+                                    ref
+                                        .read(remindersProvider.notifier)
+                                        .toggleReminder(reminder.id);
+                                  },
+                                  activeTrackColor: Theme.of(
+                                    context,
+                                  ).primaryColor,
+                                ),
+                              ],
                             ),
-                            onPressed: () {
-                              _showDeleteConfirmation(
-                                context,
-                                ref,
-                                reminder.id,
-                              );
-                            },
-                          ),
-                          Switch(
-                            value: reminder.isEnabled,
-                            onChanged: (val) {
-                              ref
-                                  .read(remindersProvider.notifier)
-                                  .toggleReminder(reminder.id);
-                            },
-                            activeTrackColor: AppColors.primary,
-                          ),
                         ],
                       ),
                     ),
@@ -251,11 +378,13 @@ class ReminderScheduleScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showReminderEditor(context, ref),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: _isSelectionMode
+          ? null
+          : FloatingActionButton(
+              onPressed: () => _showReminderEditor(context, ref),
+              backgroundColor: Theme.of(context).primaryColor,
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
     );
   }
 
@@ -369,7 +498,7 @@ class ReminderScheduleScreen extends ConsumerWidget {
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -383,6 +512,36 @@ class ReminderScheduleScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showBulkDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    List<String> ids,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Delete ${ids.length} Reminders'),
+        content: Text(
+          'Are you sure you want to delete ${ids.length} selected reminders?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(remindersProvider.notifier).deleteReminders(ids);
+              _exitSelectionMode();
+              Navigator.pop(ctx);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

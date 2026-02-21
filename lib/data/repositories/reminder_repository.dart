@@ -36,14 +36,23 @@ class ReminderRepository {
   }
 
   /// Permanently delete items that have been marked as deleted
-  Future<void> hardDeleteReminder(String id) async {
-    await _box.delete(id);
+  Future<void> hardDeleteReminders(List<String> ids) async {
+    for (final id in ids) {
+      await _box.delete(id);
+    }
 
-    // Also remove from blocklist if it was there (to keep it clean)
+    // Also add to deletion blocklist for sync
     final deletedBox = await Hive.openBox<bool>(
       AppConstants.deletedReminderBox,
     );
-    await deletedBox.delete(id);
+    for (final id in ids) {
+      await deletedBox.put(id, true);
+    }
+  }
+
+  /// Permanently delete items that have been marked as deleted
+  Future<void> hardDeleteReminder(String id) async {
+    await hardDeleteReminders([id]);
   }
 
   /// Permanently delete items that have been synced as deletions

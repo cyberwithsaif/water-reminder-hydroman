@@ -101,4 +101,31 @@ class UserProfileNotifier extends StateNotifier<UserProfile?> {
       state = _repo.getProfile();
     }
   }
+
+  Future<void> setDefaultCup(int amountMl) async {
+    if (state != null) {
+      state!.defaultCupMl = amountMl;
+      await state!.save();
+      state = null;
+      state = _repo.getProfile();
+    }
+  }
+
+  Future<void> addHydroCoins(int amount) async {
+    if (state != null) {
+      state!.hydroCoins += amount;
+      state!.lastCoinClaimDate = DateTime.now();
+      await state!.save();
+      state = _repo.getProfile();
+    }
+  }
+
+  Future<void> updateTheme(String themeName) async {
+    if (state != null) {
+      state!.themeName = themeName;
+      await state!.save();
+      state = null;
+      state = _repo.getProfile();
+    }
+  }
 }

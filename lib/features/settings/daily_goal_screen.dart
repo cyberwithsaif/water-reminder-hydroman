@@ -75,14 +75,16 @@ class _DailyGoalScreenState extends ConsumerState<DailyGoalScreen> {
             SliderTheme(
               data: SliderThemeData(
                 trackHeight: 12,
-                activeTrackColor: AppColors.primary,
+                activeTrackColor: Theme.of(context).primaryColor,
                 inactiveTrackColor: Colors.grey.shade100,
                 thumbColor: Colors.white,
                 thumbShape: const RoundSliderThumbShape(
                   enabledThumbRadius: 16,
                   elevation: 4,
                 ),
-                overlayColor: AppColors.primary.withValues(alpha: 0.15),
+                overlayColor: Theme.of(
+                  context,
+                ).primaryColor.withValues(alpha: 0.15),
               ),
               child: Slider(
                 value: _goal.toDouble(),
@@ -128,7 +130,7 @@ class _DailyGoalScreenState extends ConsumerState<DailyGoalScreen> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),

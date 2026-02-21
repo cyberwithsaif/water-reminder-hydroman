@@ -41,14 +41,16 @@ class NightMuteScreen extends ConsumerWidget {
                 gradient: LinearGradient(
                   colors: isEnabled
                       ? [
-                          AppColors.primary.withValues(alpha: 0.05),
-                          AppColors.primary.withValues(alpha: 0.1),
+                          Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.05),
+                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         ]
                       : [Colors.grey.shade50, Colors.grey.shade100],
                 ),
                 border: Border.all(
                   color: isEnabled
-                      ? AppColors.primary.withValues(alpha: 0.3)
+                      ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
                       : AppColors.cardBorder,
                 ),
               ),
@@ -60,13 +62,15 @@ class NightMuteScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isEnabled
-                          ? AppColors.primary.withValues(alpha: 0.2)
+                          ? Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.2)
                           : Colors.grey.shade200,
                     ),
                     child: Icon(
                       Icons.nightlight_round,
                       color: isEnabled
-                          ? AppColors.primary
+                          ? Theme.of(context).primaryColor
                           : AppColors.textTertiary,
                       size: 24,
                     ),
@@ -99,9 +103,11 @@ class NightMuteScreen extends ConsumerWidget {
                       await ref
                           .read(userProfileProvider.notifier)
                           .updateNightMute(isEnabled: val);
-                      ref.read(remindersProvider.notifier).scheduleNotifications();
+                      ref
+                          .read(remindersProvider.notifier)
+                          .scheduleNotifications();
                     },
-                    activeTrackColor: AppColors.primary,
+                    activeTrackColor: Theme.of(context).primaryColor,
                   ),
                 ],
               ),
@@ -168,7 +174,9 @@ class NightMuteScreen extends ConsumerWidget {
                     await ref
                         .read(userProfileProvider.notifier)
                         .updateNightMute(repeatDays: newDays);
-                    ref.read(remindersProvider.notifier).scheduleNotifications();
+                    ref
+                        .read(remindersProvider.notifier)
+                        .scheduleNotifications();
                   },
                   child: Container(
                     width: 42,
@@ -176,7 +184,7 @@ class NightMuteScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isActive
-                          ? AppColors.primary
+                          ? Theme.of(context).primaryColor
                           : Colors.grey.shade100,
                     ),
                     child: Center(

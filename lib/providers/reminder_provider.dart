@@ -109,11 +109,30 @@ class RemindersNotifier extends StateNotifier<List<Reminder>> {
         );
   }
 
-  Future<void> deleteReminder(String id) async {
-    await _repo.deleteReminder(id);
+  Future<void> deleteReminders(List<String> ids) async {
+    if (ids.isEmpty) return;
+
+    // Hard-delete locally (permanent, not soft-delete)
+    await _repo.hardDeleteReminders(ids);
     state = [..._repo.getAll()];
     await _reschedule();
-    // Proactive sync push with state refresh callback
+
+    // Delete from server immediately
+    try {
+      final api = _ref.read(apiServiceProvider);
+      if (api.token != null) {
+        // We do sequential deletes for now as the API might not support bulk delete
+        for (final id in ids) {
+          await api.deleteReminder(id).catchError((e) {
+            debugPrint('RemindersNotifier: Server delete failed for $id: $e');
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('RemindersNotifier: Bulk server delete failed: $e');
+    }
+
+    // Trigger proactive sync
     _ref
         .read(syncServiceProvider)
         .syncAll(
@@ -123,11 +142,24 @@ class RemindersNotifier extends StateNotifier<List<Reminder>> {
         );
   }
 
+  Future<void> deleteReminder(String id) async {
+    await deleteReminders([id]);
+  }
+
   Future<void> toggleReminder(String id) async {
     await _repo.toggleReminder(id);
     // Explicitly create a new list reference to trigger Riverpod watchers
     state = [..._repo.getAll()];
     await _reschedule();
+
+    // Trigger proactive sync
+    _ref
+        .read(syncServiceProvider)
+        .syncAll(
+          onComplete: () {
+            state = [..._repo.getAll()];
+          },
+        );
   }
 
   Future<void> _reschedule() async {

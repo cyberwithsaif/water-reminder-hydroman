@@ -48,15 +48,14 @@ class NotificationService {
         >();
 
     if (androidPlugin != null) {
-      // Delete old channel that may have cached invalid sound settings
-      await androidPlugin.deleteNotificationChannel('hydroman_reminders');
-
+      // Create or update notification channel (Android handles duplicates gracefully)
       final channel = AndroidNotificationChannel(
-        'hydroman_reminders',
+        'hydroman_reminders_v3',
         'Water Reminders',
         description: 'Hydration reminder notifications',
-        importance: Importance.high,
+        importance: Importance.max,
         playSound: true,
+        sound: const RawResourceAndroidNotificationSound('water_reminder'),
         enableVibration: true,
       );
       await androidPlugin.createNotificationChannel(channel);
@@ -161,13 +160,14 @@ class NotificationService {
 
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        'hydroman_reminders',
+        'hydroman_reminders_v3',
         'Water Reminders',
         channelDescription: 'Hydration reminder notifications',
-        importance: Importance.high,
+        importance: Importance.max,
         priority: Priority.high,
         icon: '@mipmap/launcher_icon',
         playSound: true,
+        sound: const RawResourceAndroidNotificationSound('water_reminder'),
         enableVibration: true,
         styleInformation: const BigTextStyleInformation(''),
       ),
@@ -214,13 +214,14 @@ class NotificationService {
 
       final details = NotificationDetails(
         android: AndroidNotificationDetails(
-          'hydroman_reminders',
+          'hydroman_reminders_v3',
           'Water Reminders',
           channelDescription: 'Hydration reminder notifications',
-          importance: Importance.high,
+          importance: Importance.max,
           priority: Priority.high,
           icon: '@mipmap/launcher_icon',
           playSound: true,
+          sound: const RawResourceAndroidNotificationSound('water_reminder'),
           enableVibration: true,
           subText: 'Daily Reminder',
           showWhen: true,
@@ -280,6 +281,7 @@ class NotificationService {
   }
 
   /// Check if a reminder time falls within the night mute window.
+  /// repeatDays is a 7-element list [Mon, Tue, Wed, Thu, Fri, Sat, Sun].
   bool _isDuringNightMute({
     required int hour,
     required int minute,
@@ -303,9 +305,17 @@ class NotificationService {
     final bedMinutes = bedHour * 60 + bedMinute;
     final wakeMinutes = wakeHour * 60 + wakeMinute;
 
-    // Check if any repeat day is enabled (if none are, mute every day)
+    // Check if any repeat day is enabled (if none are, don't mute)
     final anyDayEnabled = repeatDays.any((d) => d);
     if (!anyDayEnabled) return false;
+
+    // Check if today is a mute day
+    // DateTime.now().weekday: 1=Mon, 2=Tue, ..., 7=Sun
+    // repeatDays index: 0=Mon, 1=Tue, ..., 6=Sun
+    final todayIndex = DateTime.now().weekday - 1; // Convert to 0-based
+    if (repeatDays.length > todayIndex && !repeatDays[todayIndex]) {
+      return false; // Night mute not active today
+    }
 
     if (bedMinutes <= wakeMinutes) {
       // Same-day mute window (e.g., 01:00 - 06:00)
@@ -323,17 +333,23 @@ class NotificationService {
     bool nightMuteEnabled = false,
     String nightMuteBedtime = '22:00',
     String nightMuteWakeTime = '07:00',
-    List<bool> nightMuteRepeatDays = const [true, true, true, true, true, false, false],
+    List<bool> nightMuteRepeatDays = const [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+    ],
   }) async {
     if (!_initialized) {
       debugPrint('NotificationService: Not initialized, attempting init...');
       await initialize();
     }
 
-    // Cancel all existing
-    await cancelAll();
-
-    // Check permission first, request if not granted
+    // Check permission BEFORE cancelling existing notifications.
+    // If permission is denied, keep existing scheduled notifications intact.
     var hasNotifPermission = await hasPermission();
     debugPrint('NotificationService: hasPermission=$hasNotifPermission');
     if (!hasNotifPermission) {
@@ -346,6 +362,9 @@ class NotificationService {
         return 0;
       }
     }
+
+    // Cancel all existing (only after confirming we have permission to reschedule)
+    await cancelAll();
 
     int scheduled = 0;
     int skippedNightMute = 0;
@@ -455,13 +474,14 @@ class NotificationService {
 
       final details = NotificationDetails(
         android: AndroidNotificationDetails(
-          'hydroman_reminders',
+          'hydroman_reminders_v3',
           'Water Reminders',
           channelDescription: 'Hydration reminder notifications',
-          importance: Importance.high,
+          importance: Importance.max,
           priority: Priority.high,
           icon: '@mipmap/launcher_icon',
           playSound: true,
+          sound: const RawResourceAndroidNotificationSound('water_reminder'),
           enableVibration: true,
         ),
       );
@@ -506,13 +526,14 @@ class NotificationService {
 
       final details = NotificationDetails(
         android: AndroidNotificationDetails(
-          'hydroman_reminders',
+          'hydroman_reminders_v3',
           'Water Reminders',
           channelDescription: 'Hydration reminder notifications',
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/launcher_icon',
           playSound: true,
+          sound: const RawResourceAndroidNotificationSound('water_reminder'),
           enableVibration: true,
         ),
       );

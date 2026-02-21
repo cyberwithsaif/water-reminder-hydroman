@@ -34,7 +34,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 600),
     );
 
     _scaleAnimation = Tween<double>(
@@ -124,7 +124,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     }
 
     setState(() => _loadingProgress = 1.0);
-    await Future.delayed(const Duration(milliseconds: 200));
 
     // ── DEFERRED WORK (runs after homepage is visible) ──
     _runDeferredInit();
@@ -136,16 +135,41 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void _runDeferredInit() {
     // Capture the notifier reference NOW, before widget disposal
     final remindersNotifier = ref.read(remindersProvider.notifier);
+    final syncService = ref.read(syncServiceProvider);
+    final profileNotifier = ref.read(userProfileProvider.notifier);
+    final logsNotifier = ref.read(todayLogsProvider.notifier);
+    final isLoggedIn = ref.read(isLoggedInProvider);
 
     Future.microtask(() async {
       try {
-        // Initialize notifications & ads in parallel
+        // 1. If logged in, sync with server to get latest profile/data
+        if (isLoggedIn) {
+          try {
+            await syncService
+                .syncAll(
+                  onComplete: () {
+                    // Reload providers with synced data
+                    profileNotifier.load();
+                    logsNotifier.load();
+                    remindersNotifier.loadDataOnly();
+                  },
+                )
+                .timeout(const Duration(seconds: 10));
+          } catch (e) {
+            debugPrint('SplashScreen: Deferred sync failed: $e');
+          }
+        }
+
+        // 2. Initialize notifications & ads in parallel
         await Future.wait([
           NotificationService.instance.initialize(),
           AdHelper.initialize(),
         ]);
 
-        // NOW schedule notifications (service is initialized)
+        // Request all permissions (notification, exact alarm, battery optimization)
+        await PermissionService.requestAll();
+
+        // NOW schedule notifications (service is initialized, permissions requested)
         // Uses captured notifier reference (safe after widget disposal)
         await remindersNotifier.scheduleNotifications();
 
@@ -198,9 +222,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.primary.withValues(alpha: 0.05),
-              AppColors.primary.withValues(alpha: 0.1),
-              AppColors.primary.withValues(alpha: 0.2),
+              Theme.of(context).primaryColor.withValues(alpha: 0.05),
+              Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              Theme.of(context).primaryColor.withValues(alpha: 0.2),
             ],
           ),
         ),
@@ -215,7 +239,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 height: 256,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -227,7 +251,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 height: 192,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -246,6 +270,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         size: const Size(200, 200),
                         painter: _BubblePainter(
                           animationValue: _controller.value,
+                          bubbleColor: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.3),
                         ),
                       );
                     },
@@ -259,7 +286,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     children: [
                       Icon(
                         Icons.water_drop,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                         size: 36,
                       ),
                       const SizedBox(width: 8),
@@ -304,11 +331,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               return LinearProgressIndicator(
                                 value: value,
                                 minHeight: 6,
-                                backgroundColor: AppColors.primary.withValues(
-                                  alpha: 0.2,
-                                ),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  AppColors.primary,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.2),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).primaryColor,
                                 ),
                               );
                             },
@@ -320,7 +347,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           style: GoogleFonts.manrope(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary.withValues(alpha: 0.8),
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.8),
                             letterSpacing: 2,
                           ),
                         ),
@@ -380,7 +409,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           width: 120,
           height: 140,
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: Theme.of(context).primaryColor,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(60),
               topRight: Radius.circular(60),
@@ -389,7 +418,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.4),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -469,14 +498,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
 class _BubblePainter extends CustomPainter {
   final double animationValue;
+  final Color bubbleColor;
 
-  _BubblePainter({required this.animationValue});
+  _BubblePainter({required this.animationValue, required this.bubbleColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.3)
+      ..color = bubbleColor
       ..style = PaintingStyle.fill;
 
     // Drawing 1 bubble only

@@ -41,7 +41,7 @@ class WaterLogRepository {
     final startOfDay = DateTime(now.year, now.month, now.day);
     return _box.values
         .where(
-          (log) => log.deletedAt == null && log.timestamp.isAfter(startOfDay),
+          (log) => log.deletedAt == null && !log.timestamp.isBefore(startOfDay),
         )
         .toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
@@ -58,7 +58,7 @@ class WaterLogRepository {
         .where(
           (log) =>
               log.deletedAt == null &&
-              log.timestamp.isAfter(startOfDay) &&
+              !log.timestamp.isBefore(startOfDay) &&
               log.timestamp.isBefore(endOfDay),
         )
         .toList()
@@ -70,7 +70,7 @@ class WaterLogRepository {
         .where(
           (log) =>
               log.deletedAt == null &&
-              log.timestamp.isAfter(start) &&
+              !log.timestamp.isBefore(start) &&
               log.timestamp.isBefore(end),
         )
         .toList()
@@ -79,7 +79,8 @@ class WaterLogRepository {
 
   Map<int, int> getWeeklyData() {
     final now = DateTime.now();
-    final monday = now.subtract(Duration(days: now.weekday - 1));
+    // Monday = 1, Sunday = 7
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
     final Map<int, int> weekData = {};
 
     for (int i = 0; i < 7; i++) {
@@ -91,23 +92,38 @@ class WaterLogRepository {
   }
 
   int getStreak(int dailyGoal) {
+    final allLogs = getAllLogs();
+    if (allLogs.isEmpty) return 0;
+
+    // Group volumes by date string (YYYY-MM-DD)
+    final Map<String, int> dailyTotals = {};
+    for (final log in allLogs) {
+      final dateStr =
+          '${log.timestamp.year}-${log.timestamp.month}-${log.timestamp.day}';
+      dailyTotals[dateStr] = (dailyTotals[dateStr] ?? 0) + log.amountMl;
+    }
+
     int streak = 0;
     final now = DateTime.now();
 
-    for (int i = 0; i < 365; i++) {
-      final date = now.subtract(Duration(days: i + 1));
-      final dayLogs = getLogsForDate(date);
-      final dayTotal = dayLogs.fold(0, (sum, log) => sum + log.amountMl);
-      if (dayTotal >= dailyGoal) {
+    // 1. Check today's progress (doesn't break a continuous past streak yet)
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+    final hasMetTodayGoal = (dailyTotals[todayStr] ?? 0) >= dailyGoal;
+
+    // 2. Count continuous days ending yesterday
+    for (int i = 1; i < 365; i++) {
+      final date = DateTime(now.year, now.month, now.day - i);
+      final dateStr = '${date.year}-${date.month}-${date.day}';
+
+      if ((dailyTotals[dateStr] ?? 0) >= dailyGoal) {
         streak++;
       } else {
         break;
       }
     }
 
-    // Check today too
-    final todayTotal = getTodayIntake();
-    if (todayTotal >= dailyGoal) {
+    // 3. Add today if met
+    if (hasMetTodayGoal) {
       streak++;
     }
 
@@ -116,10 +132,10 @@ class WaterLogRepository {
 
   double getWeeklyAverage() {
     final weekData = getWeeklyData();
-    final totalDays = weekData.entries.where((e) => e.value > 0).length;
-    if (totalDays == 0) return 0;
+    final activeDays = weekData.entries.where((e) => e.value > 0).length;
+    if (activeDays == 0) return 0;
     final totalMl = weekData.values.fold(0, (sum, val) => sum + val);
-    return totalMl / totalDays;
+    return totalMl / activeDays;
   }
 
   Map<int, int> getMonthlyData() {

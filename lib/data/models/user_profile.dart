@@ -46,6 +46,15 @@ class UserProfile extends HiveObject {
   @HiveField(13)
   int defaultCupMl;
 
+  @HiveField(14)
+  int hydroCoins;
+
+  @HiveField(15)
+  String themeName; // 'blue', 'orange', 'green'
+
+  @HiveField(16)
+  DateTime? lastCoinClaimDate;
+
   UserProfile({
     this.gender = 'male',
     this.weightKg = 70.0,
@@ -69,6 +78,9 @@ class UserProfile extends HiveObject {
       false,
     ],
     this.defaultCupMl = 250,
+    this.hydroCoins = 0,
+    this.themeName = 'blue',
+    this.lastCoinClaimDate,
   });
 
   double get weightDisplay =>

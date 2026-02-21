@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../data/models/water_log.dart';
 import '../data/repositories/water_log_repository.dart';
 import 'user_provider.dart';
+import 'auth_provider.dart';
 
 const _uuid = Uuid();
 
@@ -15,7 +16,7 @@ final waterLogRepositoryProvider = Provider<WaterLogRepository>((ref) {
 final todayLogsProvider =
     StateNotifierProvider<TodayLogsNotifier, List<WaterLog>>((ref) {
       final repo = ref.watch(waterLogRepositoryProvider);
-      return TodayLogsNotifier(repo);
+      return TodayLogsNotifier(repo, ref);
     });
 
 // Today's total intake
@@ -87,8 +88,11 @@ final logsForDateProvider = StateProvider.family<List<WaterLog>, DateTime>((
 
 class TodayLogsNotifier extends StateNotifier<List<WaterLog>> {
   final WaterLogRepository _repo;
+  final Ref _ref;
 
-  TodayLogsNotifier(this._repo) : super([]);
+  TodayLogsNotifier(this._repo, this._ref) : super([]) {
+    load();
+  }
 
   void load() {
     state = _repo.getTodayLogs();
@@ -103,11 +107,48 @@ class TodayLogsNotifier extends StateNotifier<List<WaterLog>> {
     );
     await _repo.addLog(log);
     state = _repo.getTodayLogs();
+
+    // Check for goal completion and award coins
+    final profile = _ref.read(userProfileProvider);
+    if (profile != null) {
+      final intake = state.fold(0, (sum, log) => sum + log.amountMl);
+      final goal = profile.dailyGoalMl;
+
+      final now = DateTime.now();
+      final lastClaim = profile.lastCoinClaimDate;
+      final isNewDay =
+          lastClaim == null ||
+          lastClaim.year != now.year ||
+          lastClaim.month != now.month ||
+          lastClaim.day != now.day;
+
+      if (intake >= goal && isNewDay) {
+        await _ref.read(userProfileProvider.notifier).addHydroCoins(50);
+      }
+    }
+
+    // Trigger background sync
+    _ref
+        .read(syncServiceProvider)
+        .syncAll(
+          onComplete: () {
+            state = _repo.getTodayLogs();
+          },
+        );
   }
 
   Future<void> removeLog(String id) async {
     await _repo.deleteLog(id);
     state = _repo.getTodayLogs();
+
+    // Trigger background sync
+    _ref
+        .read(syncServiceProvider)
+        .syncAll(
+          onComplete: () {
+            state = _repo.getTodayLogs();
+          },
+        );
   }
 
   Future<void> removeLastLog() async {
@@ -115,6 +156,15 @@ class TodayLogsNotifier extends StateNotifier<List<WaterLog>> {
       // state is sorted by timestamp desc, so first one is the last added
       await _repo.deleteLog(state.first.id);
       state = _repo.getTodayLogs();
+
+      // Trigger background sync
+      _ref
+          .read(syncServiceProvider)
+          .syncAll(
+            onComplete: () {
+              state = _repo.getTodayLogs();
+            },
+          );
     }
   }
 }

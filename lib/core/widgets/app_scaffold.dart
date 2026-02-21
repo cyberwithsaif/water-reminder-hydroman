@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
@@ -6,6 +7,9 @@ import '../../features/analytics/analytics_screen.dart';
 import '../../features/reminders/reminder_schedule_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/user_provider.dart';
+import '../../providers/water_log_provider.dart';
+import '../../providers/reminder_provider.dart';
 import '../../services/permission_service.dart';
 import 'banner_ad_widget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +23,8 @@ class AppScaffold extends ConsumerStatefulWidget {
 
 class _AppScaffoldState extends ConsumerState<AppScaffold> {
   int _currentIndex = 0;
+  Timer? _syncTimer;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -26,8 +32,40 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     // Trigger auto-sync and permission request on app startup
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await PermissionService.requestAll();
-      ref.read(syncServiceProvider).syncAll();
+      _performSync();
+      // Start periodic sync every 10 seconds
+      _syncTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+        _performSync();
+      });
     });
+  }
+
+  void _performSync() {
+    if (_isSyncing) return;
+    final isLoggedIn = ref.read(isLoggedInProvider);
+    if (!isLoggedIn) return;
+
+    _isSyncing = true;
+    ref
+        .read(syncServiceProvider)
+        .syncAll(
+          onComplete: () {
+            if (!mounted) return;
+            // Reload all providers with synced data
+            ref.read(userProfileProvider.notifier).load();
+            ref.read(todayLogsProvider.notifier).load();
+            ref.read(remindersProvider.notifier).loadDataOnly();
+          },
+        )
+        .whenComplete(() {
+          _isSyncing = false;
+        });
+  }
+
+  @override
+  void dispose() {
+    _syncTimer?.cancel();
+    super.dispose();
   }
 
   final _pages = const [
@@ -40,7 +78,26 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          final slideAnimation = Tween<Offset>(
+            begin: const Offset(0.02, 0),
+            end: Offset.zero,
+          ).animate(animation);
+
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(position: slideAnimation, child: child),
+          );
+        },
+        child: Container(
+          key: ValueKey<int>(_currentIndex),
+          child: _pages[_currentIndex],
+        ),
+      ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -113,6 +170,9 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.primaryColor;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -122,7 +182,7 @@ class _NavItem extends StatelessWidget {
           Icon(
             icon,
             size: 26,
-            color: isSelected ? AppColors.primary : AppColors.textTertiary,
+            color: isSelected ? primaryColor : AppColors.textTertiary,
           ),
           const SizedBox(height: 4),
           Text(
@@ -130,7 +190,7 @@ class _NavItem extends StatelessWidget {
             style: GoogleFonts.manrope(
               fontSize: 11,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? AppColors.primary : AppColors.textTertiary,
+              color: isSelected ? primaryColor : AppColors.textTertiary,
             ),
           ),
         ],

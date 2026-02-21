@@ -31,12 +31,12 @@
 
         <!-- flutter_local_notifications: Receives scheduled alarms and shows notifications -->
         <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
-            android:exported="false"
+            android:exported="true"
             android:directBootAware="true" />
 
         <!-- flutter_local_notifications: Re-schedules notifications after device reboot -->
         <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
-            android:exported="false"
+            android:exported="true"
             android:directBootAware="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
