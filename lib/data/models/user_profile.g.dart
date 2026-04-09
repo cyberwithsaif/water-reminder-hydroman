@@ -30,14 +30,17 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
       nightMuteBedtime: fields[10] as String,
       nightMuteWakeTime: fields[11] as String,
       nightMuteRepeatDays: (fields[12] as List).cast<bool>(),
-      defaultCupMl: fields[13] as int? ?? 250,
+      defaultCupMl: fields[13] == null ? 250 : fields[13] as int,
+      hydroCoins: fields[14] == null ? 0 : fields[14] as int,
+      themeName: fields[15] == null ? 'blue' : fields[15] as String,
+      lastCoinClaimDate: fields[16] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProfile obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.gender)
       ..writeByte(1)
@@ -65,7 +68,13 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
       ..writeByte(12)
       ..write(obj.nightMuteRepeatDays)
       ..writeByte(13)
-      ..write(obj.defaultCupMl);
+      ..write(obj.defaultCupMl)
+      ..writeByte(14)
+      ..write(obj.hydroCoins)
+      ..writeByte(15)
+      ..write(obj.themeName)
+      ..writeByte(16)
+      ..write(obj.lastCoinClaimDate);
   }
 
   @override

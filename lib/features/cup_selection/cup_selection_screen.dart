@@ -14,6 +14,7 @@ class CupSelectionScreen extends ConsumerWidget {
     final profile = ref.watch(userProfileProvider);
     final goal = profile?.dailyGoalMl ?? 2500;
     final progress = intake / goal;
+    final isImperial = profile?.weightUnit == 'lbs';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -45,9 +46,15 @@ class CupSelectionScreen extends ConsumerWidget {
                           color: AppColors.textPrimary,
                         ),
                         children: [
-                          TextSpan(text: '${_formatNumber(intake)} '),
                           TextSpan(
-                            text: '/ ${_formatNumber(goal)} ml',
+                            text: isImperial
+                                ? '${(intake * 0.033814).toStringAsFixed(1)} '
+                                : '${_formatNumber(intake)} ',
+                          ),
+                          TextSpan(
+                            text: isImperial
+                                ? '/ ${(goal * 0.033814).toStringAsFixed(1)} oz'
+                                : '/ ${_formatNumber(goal)} ml',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -108,27 +115,27 @@ class CupSelectionScreen extends ConsumerWidget {
                       children: [
                         _CupCard(
                           icon: Icons.coffee,
-                          size: '100 ml',
+                          size: isImperial ? '3.4 oz' : '100 ml',
                           label: 'Espresso',
                           onTap: () =>
                               _addAndPop(context, ref, 100, 'espresso'),
                         ),
                         _CupCard(
                           icon: Icons.local_drink,
-                          size: '250 ml',
+                          size: isImperial ? '8.5 oz' : '250 ml',
                           label: 'Glass',
                           isSelected: false,
                           onTap: () => _addAndPop(context, ref, 250, 'glass'),
                         ),
                         _CupCard(
                           icon: Icons.water,
-                          size: '500 ml',
+                          size: isImperial ? '16.9 oz' : '500 ml',
                           label: 'Bottle',
                           onTap: () => _addAndPop(context, ref, 500, 'bottle'),
                         ),
                         _CupCard(
                           icon: Icons.sports_gymnastics,
-                          size: '750 ml',
+                          size: isImperial ? '25.4 oz' : '750 ml',
                           label: 'Sports',
                           onTap: () => _addAndPop(context, ref, 750, 'sports'),
                         ),
@@ -191,7 +198,9 @@ class CupSelectionScreen extends ConsumerWidget {
           keyboardType: TextInputType.number,
           autofocus: true,
           decoration: InputDecoration(
-            suffixText: 'ml',
+            suffixText: ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                ? 'oz'
+                : 'ml',
             hintText: 'Enter amount',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -203,11 +212,16 @@ class CupSelectionScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              final amount = int.tryParse(controller.text);
-              if (amount != null && amount > 0) {
+              final val = double.tryParse(controller.text);
+              if (val != null && val > 0) {
+                final isImperial =
+                    ref.read(userProfileProvider)?.weightUnit == 'lbs';
+                final amountMl = isImperial
+                    ? (val / 0.033814).round()
+                    : val.round();
                 ref
                     .read(todayLogsProvider.notifier)
-                    .addWater(amount, cupType: 'custom');
+                    .addWater(amountMl, cupType: 'custom');
                 Navigator.pop(ctx);
                 Navigator.pop(context);
               }

@@ -43,17 +43,20 @@ class UserProfile extends HiveObject {
   @HiveField(12)
   List<bool> nightMuteRepeatDays;
 
-  @HiveField(13)
+  @HiveField(13, defaultValue: 250)
   int defaultCupMl;
 
-  @HiveField(14)
+  @HiveField(14, defaultValue: 0)
   int hydroCoins;
 
-  @HiveField(15)
+  @HiveField(15, defaultValue: 'blue')
   String themeName; // 'blue', 'orange', 'green'
 
   @HiveField(16)
   DateTime? lastCoinClaimDate;
+
+  @HiveField(17, defaultValue: false)
+  bool isPrivacyAccepted;
 
   UserProfile({
     this.gender = 'male',
@@ -80,6 +83,7 @@ class UserProfile extends HiveObject {
     this.defaultCupMl = 250,
     this.hydroCoins = 0,
     this.themeName = 'blue',
+    this.isPrivacyAccepted = false,
     this.lastCoinClaimDate,
   });
 

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://72.61.171.190:3000/api';
+  static const String baseUrl = 'http://72.61.171.190:3001/api';
   String? _token;
 
   void setToken(String? token) => _token = token;
@@ -140,6 +140,20 @@ class ApiService {
       statusCode: res.statusCode,
       message: body['error'] ?? 'Unknown error',
     );
+  }
+
+  // ─── Feedback ───
+  Future<bool> sendFeedback(String message) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/feedback'),
+        headers: _headers,
+        body: jsonEncode({'message': message}),
+      );
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
@@ -97,6 +98,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onPressed: () {
                   final name = controller.text.trim();
                   ref.read(userProfileProvider.notifier).updateName(name);
+                  ref.read(syncServiceProvider).syncAll();
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
@@ -214,6 +216,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       p.weightUnit = unit;
                       p.save();
                       ref.read(userProfileProvider.notifier).load();
+                      ref.read(syncServiceProvider).syncAll();
                     }
                     Navigator.pop(ctx);
                   },
@@ -364,6 +367,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       p.gender = selected;
                       p.save();
                       ref.read(userProfileProvider.notifier).load();
+                      ref.read(syncServiceProvider).syncAll();
                     }
                     Navigator.pop(ctx);
                   },
@@ -443,13 +447,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    final p = ref.read(userProfileProvider);
-                    if (p != null) {
-                      // Convert weight between units
-                      p.weightUnit = selected;
-                      p.save();
-                      ref.read(userProfileProvider.notifier).load();
-                    }
+                    ref
+                        .read(userProfileProvider.notifier)
+                        .updateWeightUnit(selected);
                     Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
@@ -704,14 +704,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Thank you for your feedback! 💙'),
-                      duration: Duration(seconds: 2),
-                    ),
+                onPressed: () async {
+                  final msg = controller.text.trim();
+                  if (msg.isEmpty) return;
+
+                  // Show loading indicator in a dialog
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (c) =>
+                        const Center(child: CircularProgressIndicator()),
                   );
+
+                  final success = await ref
+                      .read(apiServiceProvider)
+                      .sendFeedback(msg);
+
+                  // Pop loading
+                  if (context.mounted) Navigator.pop(context);
+                  // Pop modal
+                  if (context.mounted) Navigator.pop(ctx);
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? 'Thank you for your feedback! 💙'
+                              : 'Failed to send feedback. Please try again.',
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
                 },
                 icon: const Icon(Icons.send, size: 18),
                 label: Text(
@@ -1136,6 +1161,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               const SizedBox(height: 8),
 
+              // Rewards & Deals section
+              _SectionHeader(title: 'REWARDS & DEALS'),
+              _SettingsTile(
+                icon: Icons.card_giftcard,
+                title: 'Offers & Rewards',
+                subtitle: 'Get discounts with Hydro Coins',
+                onTap: _showRewardsInfo,
+              ),
+
+              const SizedBox(height: 8),
+
               // Support section
               _SectionHeader(title: 'SUPPORT'),
               _SettingsTile(
@@ -1191,6 +1227,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     );
                   } else {
                     Navigator.pushNamed(context, '/login');
+                  }
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              const _SectionHeader(title: 'Legal'),
+              _SettingsTile(
+                title: 'Privacy Policy',
+                subtitle: 'Review our data practices',
+                icon: Icons.policy_outlined,
+                onTap: () async {
+                  final url = Uri.parse(
+                    'http://72.61.171.190:3001/privacy/policy',
+                  );
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
                   }
                 },
               ),
@@ -1275,6 +1328,142 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showRewardsInfo() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            const Icon(Icons.card_giftcard, color: Colors.blue),
+            const SizedBox(width: 10),
+            Text(
+              'Offers & Rewards',
+              style: GoogleFonts.manrope(fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Exclusive Deal for Hydroman Users!',
+              style: GoogleFonts.manrope(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'We have partnered with infexor.com to bring you exclusive discounts on premium digital services.',
+              style: GoogleFonts.manrope(fontSize: 14, height: 1.5),
+            ),
+            const SizedBox(height: 16),
+            _buildOfferItem(
+              'Digital Services',
+              'Get 10% OFF on Website & App Development',
+            ),
+            const SizedBox(height: 12),
+            _buildOfferItem('Coupon Code', 'Use HYDRO10 at checkout'),
+            const SizedBox(height: 20),
+            Text(
+              'How to redeem?',
+              style: GoogleFonts.manrope(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '1. Visit infexor.com\\n2. Mention the code during consultation\\n3. Enjoy your 10% discount!',
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Close',
+              style: GoogleFonts.manrope(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final url = Uri.parse('https://infexor.com');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: Text(
+              'Visit infexor.com',
+              style: GoogleFonts.manrope(
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Clipboard.setData(const ClipboardData(text: 'HYDRO10'));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Coupon code copied!')),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Copy Code'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOfferItem(String title, String desc) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.check_circle, color: Colors.green, size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.manrope(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                desc,
+                style: GoogleFonts.manrope(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

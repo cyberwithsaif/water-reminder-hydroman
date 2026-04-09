@@ -224,6 +224,10 @@ class SyncService {
           'sleep_time': localProfile.sleepTime,
           'weight_unit': localProfile.weightUnit,
           'default_cup_ml': localProfile.defaultCupMl,
+          'hydro_coins': localProfile.hydroCoins,
+          'is_privacy_accepted': localProfile.isPrivacyAccepted,
+          'last_coin_claim_date': localProfile.lastCoinClaimDate
+              ?.toIso8601String(),
         });
         debugPrint('SyncService: Profile pushed to server');
       } else {
@@ -241,6 +245,11 @@ class SyncService {
               sleepTime: serverProfile['sleep_time'] ?? '23:00',
               weightUnit: serverProfile['weight_unit'] ?? 'kg',
               defaultCupMl: serverProfile['default_cup_ml'] as int? ?? 250,
+              hydroCoins: serverProfile['hydro_coins'] as int? ?? 0,
+              isPrivacyAccepted: serverProfile['is_privacy_accepted'] ?? false,
+              lastCoinClaimDate: serverProfile['last_coin_claim_date'] != null
+                  ? DateTime.parse(serverProfile['last_coin_claim_date'])
+                  : null,
               isOnboarded: true,
               notificationsEnabled: true,
             );

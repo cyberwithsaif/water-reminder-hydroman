@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +19,14 @@ class HomeScreen extends ConsumerWidget {
     final intake = ref.watch(todayIntakeProvider);
     final progress = ref.watch(progressProvider);
     final profile = ref.watch(userProfileProvider);
+
+    // Initial privacy consent check
+    if (profile != null && !profile.isPrivacyAccepted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showPrivacyDialog(context, ref);
+      });
+    }
+
     final streak = ref.watch(streakProvider);
     final weeklyAvg = ref.watch(weeklyAverageProvider);
     final goal = profile?.dailyGoalMl ?? 2500;
@@ -66,34 +76,38 @@ class HomeScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.amber.shade200),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.stars,
-                            color: Colors.amber,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${profile?.hydroCoins ?? 0} HC',
-                            style: GoogleFonts.manrope(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.amber.shade900,
+                    GestureDetector(
+                      onTap: () =>
+                          _showCouponDialog(context, profile?.hydroCoins ?? 0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.amber.shade200),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.stars,
+                              color: Colors.amber,
+                              size: 18,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              '${profile?.hydroCoins ?? 0} HC',
+                              style: GoogleFonts.manrope(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.amber.shade900,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -107,6 +121,7 @@ class HomeScreen extends ConsumerWidget {
                   progress: progress,
                   intake: intake,
                   goal: goal,
+                  isImperial: profile?.weightUnit == 'lbs',
                 ),
               ),
 
@@ -129,7 +144,9 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     _StatItem(
                       label: 'Average',
-                      value: '${weeklyAvg.round()} ml',
+                      value: profile?.weightUnit == 'lbs'
+                          ? '${(weeklyAvg * 0.033814).toStringAsFixed(1)} oz'
+                          : '${weeklyAvg.round()} ml',
                       icon: Icons.show_chart,
                       iconColor: Theme.of(context).primaryColor,
                     ),
@@ -203,6 +220,7 @@ class HomeScreen extends ConsumerWidget {
                                 icon: defaultIcon,
                                 amount: defaultCup,
                                 isPrimary: true,
+                                isImperial: profile?.weightUnit == 'lbs',
                                 onTap: () {
                                   ref
                                       .read(todayLogsProvider.notifier)
@@ -219,6 +237,7 @@ class HomeScreen extends ConsumerWidget {
                                 icon: Icons.water,
                                 amount: 500,
                                 isPrimary: false,
+                                isImperial: profile?.weightUnit == 'lbs',
                                 onTap: () {
                                   ref
                                       .read(todayLogsProvider.notifier)
@@ -418,6 +437,197 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _showCouponDialog(BuildContext context, int coins) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            const Icon(Icons.stars, color: Colors.amber),
+            const SizedBox(width: 10),
+            Text(
+              'Hydro Rewards',
+              style: GoogleFonts.manrope(fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Congratulations! As a Hydroman user, you have earned a special reward.',
+              style: GoogleFonts.manrope(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade100),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Get 10% OFF at infexor.com',
+                    style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Use code for app or website development services.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: SelectableText(
+                      'HYDRO10',
+                      style: GoogleFonts.manrope(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final url = Uri.parse('https://infexor.com');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: Text(
+              'Visit infexor.com',
+              style: GoogleFonts.manrope(
+                fontWeight: FontWeight.w700,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(const ClipboardData(text: 'HYDRO10'));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Coupon code copied to clipboard!'),
+                ),
+              );
+              Navigator.pop(ctx);
+            },
+            child: Text(
+              'Copy Code',
+              style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.privacy_tip, color: Colors.blue),
+            const SizedBox(width: 10),
+            Text(
+              'Privacy Consent',
+              style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your privacy is our priority. Please review and accept our Privacy Policy to continue using Hydroman.',
+              style: GoogleFonts.manrope(fontSize: 14),
+            ),
+            const SizedBox(height: 15),
+            InkWell(
+              onTap: () async {
+                final url = Uri.parse(
+                  'http://72.61.171.190:3001/privacy/policy',
+                );
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Text(
+                'View Privacy Policy',
+                style: GoogleFonts.manrope(
+                  fontSize: 14,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await ref
+                  .read(userProfileProvider.notifier)
+                  .acceptPrivacyPolicy();
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            child: Text(
+              'Accept & Continue',
+              style: GoogleFonts.manrope(
+                fontWeight: FontWeight.w700,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _StatItem extends StatelessWidget {
@@ -469,12 +679,14 @@ class _QuickAddButton extends StatelessWidget {
   final IconData icon;
   final int amount;
   final bool isPrimary;
+  final bool isImperial;
   final VoidCallback onTap;
 
   const _QuickAddButton({
     required this.icon,
     required this.amount,
     required this.isPrimary,
+    this.isImperial = false,
     required this.onTap,
   });
 
@@ -511,7 +723,9 @@ class _QuickAddButton extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '+${amount}ml',
+              isImperial
+                  ? '+${(amount * 0.033814).toStringAsFixed(1)}oz'
+                  : '+${amount}ml',
               style: GoogleFonts.manrope(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -531,12 +745,14 @@ class WaterProgressIndicator extends StatefulWidget {
   final double progress;
   final int intake;
   final int goal;
+  final bool isImperial;
 
   const WaterProgressIndicator({
     super.key,
     required this.progress,
     required this.intake,
     required this.goal,
+    this.isImperial = false,
   });
 
   @override
@@ -597,7 +813,9 @@ class _WaterProgressIndicatorState extends State<WaterProgressIndicator>
               ),
               const SizedBox(height: 4),
               Text(
-                '${widget.intake}',
+                widget.isImperial
+                    ? (widget.intake * 0.033814).toStringAsFixed(1)
+                    : '${widget.intake}',
                 style: GoogleFonts.manrope(
                   fontSize: 40,
                   fontWeight: FontWeight.w800,
@@ -605,7 +823,7 @@ class _WaterProgressIndicatorState extends State<WaterProgressIndicator>
                 ),
               ),
               Text(
-                'ml',
+                widget.isImperial ? 'oz' : 'ml',
                 style: GoogleFonts.manrope(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -614,7 +832,9 @@ class _WaterProgressIndicatorState extends State<WaterProgressIndicator>
               ),
               const SizedBox(height: 4),
               Text(
-                'Goal: ${widget.goal}ml',
+                widget.isImperial
+                    ? 'Goal: ${(widget.goal * 0.033814).toStringAsFixed(1)}oz'
+                    : 'Goal: ${widget.goal}ml',
                 style: GoogleFonts.manrope(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,

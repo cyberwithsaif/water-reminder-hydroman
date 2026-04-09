@@ -116,6 +116,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile?> {
       state!.hydroCoins += amount;
       state!.lastCoinClaimDate = DateTime.now();
       await state!.save();
+      state = null;
       state = _repo.getProfile();
     }
   }
@@ -123,6 +124,24 @@ class UserProfileNotifier extends StateNotifier<UserProfile?> {
   Future<void> updateTheme(String themeName) async {
     if (state != null) {
       state!.themeName = themeName;
+      await state!.save();
+      state = null;
+      state = _repo.getProfile();
+    }
+  }
+
+  Future<void> updateWeightUnit(String unit) async {
+    if (state != null) {
+      state!.weightUnit = unit;
+      await state!.save();
+      state = null;
+      state = _repo.getProfile();
+    }
+  }
+
+  Future<void> acceptPrivacyPolicy() async {
+    if (state != null) {
+      state!.isPrivacyAccepted = true;
       await state!.save();
       state = null;
       state = _repo.getProfile();

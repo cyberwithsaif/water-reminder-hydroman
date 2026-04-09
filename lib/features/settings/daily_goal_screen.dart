@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class DailyGoalScreen extends ConsumerStatefulWidget {
   const DailyGoalScreen({super.key});
@@ -48,7 +49,9 @@ class _DailyGoalScreenState extends ConsumerState<DailyGoalScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$_goal',
+                  ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                      ? (_goal * 0.033814).toStringAsFixed(1)
+                      : '$_goal',
                   style: GoogleFonts.manrope(
                     fontSize: 64,
                     fontWeight: FontWeight.w800,
@@ -58,7 +61,9 @@ class _DailyGoalScreenState extends ConsumerState<DailyGoalScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'ml',
+                    ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                        ? 'oz'
+                        : 'ml',
                     style: GoogleFonts.manrope(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -87,13 +92,31 @@ class _DailyGoalScreenState extends ConsumerState<DailyGoalScreen> {
                 ).primaryColor.withValues(alpha: 0.15),
               ),
               child: Slider(
-                value: _goal.toDouble(),
-                min: AppConstants.minGoalMl.toDouble(),
-                max: AppConstants.maxGoalMl.toDouble(),
-                divisions:
-                    (AppConstants.maxGoalMl - AppConstants.minGoalMl) ~/
-                    AppConstants.goalStepMl,
-                onChanged: (val) => setState(() => _goal = val.round()),
+                value: ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                    ? (_goal * 0.033814)
+                    : _goal.toDouble(),
+                min: ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                    ? (AppConstants.minGoalMl * 0.033814)
+                    : AppConstants.minGoalMl.toDouble(),
+                max: ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                    ? (AppConstants.maxGoalMl * 0.033814)
+                    : AppConstants.maxGoalMl.toDouble(),
+                divisions: ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                    ? ((AppConstants.maxGoalMl - AppConstants.minGoalMl) *
+                              0.033814 /
+                              1.0)
+                          .round()
+                    : (AppConstants.maxGoalMl - AppConstants.minGoalMl) ~/
+                          AppConstants.goalStepMl,
+                onChanged: (val) {
+                  setState(() {
+                    if (ref.read(userProfileProvider)?.weightUnit == 'lbs') {
+                      _goal = (val / 0.033814).round();
+                    } else {
+                      _goal = val.round();
+                    }
+                  });
+                },
               ),
             ),
 
@@ -104,13 +127,21 @@ class _DailyGoalScreenState extends ConsumerState<DailyGoalScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildStepButton(Icons.remove, () {
+                  final step =
+                      ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                      ? (1.0 / 0.033814).round()
+                      : AppConstants.goalStepMl;
                   if (_goal > AppConstants.minGoalMl) {
-                    setState(() => _goal -= AppConstants.goalStepMl);
+                    setState(() => _goal -= step);
                   }
                 }),
                 _buildStepButton(Icons.add, () {
+                  final step =
+                      ref.read(userProfileProvider)?.weightUnit == 'lbs'
+                      ? (1.0 / 0.033814).round()
+                      : AppConstants.goalStepMl;
                   if (_goal < AppConstants.maxGoalMl) {
-                    setState(() => _goal += AppConstants.goalStepMl);
+                    setState(() => _goal += step);
                   }
                 }),
               ],
@@ -127,6 +158,7 @@ class _DailyGoalScreenState extends ConsumerState<DailyGoalScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     ref.read(userProfileProvider.notifier).updateGoal(_goal);
+                    ref.read(syncServiceProvider).syncAll();
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
